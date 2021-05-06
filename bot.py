@@ -16,8 +16,6 @@ import json
 import sys
 
 from discord.ext import commands
-from dotenv import load_dotenv
-from threading import Thread
 
 
 # parsing config and setting global variables

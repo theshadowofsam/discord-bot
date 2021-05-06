@@ -64,7 +64,7 @@ async def on_ready():
         print("\nThe previous shutdown was NOT graceful!\nSome data has been lost!\n")
     config["stats"]["last_shutdown_graceful"] = False
     with open("config.json", 'w') as conf:
-        json.dump(config, conf)
+        json.dump(config, conf, separators=(",\n", ":"), indent="")
     LAST_SHUTDOWN_GRACEFUL = False
     
     # sets main_guild to be the guild of name GUILD in the config
@@ -80,14 +80,15 @@ async def on_ready():
 
 
     # setting some more global variables
+    global main_guild_text_channel
     global emojis
     emojis = {}
     global emoji_list
     emoji_list = []    
-
     if main_guild_e:
-        global main_guild_text_channel
         main_guild_text_channel = main_guild.get_channel(BOT_TEXT_CHANNELS[GUILD])
+        print(main_guild)
+        print(main_guild_text_channel)
 
     
     # keywords that on_message() uses
@@ -113,9 +114,9 @@ async def on_ready():
 
     # cute header with guild and self info
     print("*"*35)
-    print(f"{bot.user} has successfully connected to Discord and is readied!")
+    print(f"\n{bot.user} has successfully connected to Discord and is readied!")
     if main_guild_e:
-        print(f"{bot.user} has access to Main Guild: \n{main_guild.name}(id: {main_guild.id})")
+        print(f"{bot.user} has access to Main Guild: \n\t{main_guild.name}(id: {main_guild.id})\n")
     print("*"*35)    
 
 
@@ -220,6 +221,7 @@ async def pong(ctx):
 @bot.command()
 async def close(ctx):
     if ctx.author.name != OPERATOR:
+        print(f"someone tried to close the bot: {ctx.author.name}")
         return
     await ctx.send("Starting Graceful Shutdown...")
 
@@ -228,7 +230,7 @@ async def close(ctx):
     config['stats']['last_shutdown_graceful'] = True
 
     with open("config.json", 'w') as conf:
-        json.dump(config, conf)
+        json.dump(config, conf, separators=(",\n", ":"), indent="")
 
     await ctx.send("Done!")
     await bot.close()

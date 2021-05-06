@@ -1,0 +1,5 @@
+{
+    "stats":{"total_messages_sent":8, "bot_mentions":0, "last_shutdown_graceful":true},
+    "env":{"token":"your bots token here", "guild":"default guildname here", "prefix":"!"},
+    "bot_text_channels":{}
+}

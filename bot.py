@@ -12,7 +12,7 @@ import random
 import os
 import discord
 import re
-import configparser as cp
+import json
 
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -20,6 +20,14 @@ from threading import Thread
 
 # the next 33 lines are all global variables which is why
 # they arent in a function. I should make this a class
+
+"""
+
+
+
+In the process of deprecating
+
+
 
 # loads config file using configparser module
 config = cp.ConfigParser()
@@ -44,6 +52,8 @@ print(f"TOKEN = {TOKEN}")
 print(f"GUILD = {GUILD}")
 print(f"PREFIX = {PREFIX}")
 
+BOT_TEXT_CHANNELS = {}
+"""
 
 # creating intents for the bot 
 # my understanding is that these are more specialized permissions???

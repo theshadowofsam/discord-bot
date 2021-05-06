@@ -5,8 +5,8 @@ Samuel Lee
 
 a bot for a discord server
 very early initial prototype
-i added way too many comments because this is just an internal
-project that i am using to learn the discord api
+I added way too many comments because this is just an internal
+project that I'm using to learn the discord.py api
 """
 import random
 import os
@@ -58,6 +58,7 @@ bot = commands.Bot(command_prefix = PREFIX, intents = intents)
 @bot.event
 async def on_ready():
     
+
     # check and response for an abrupt previous shutdown
     global LAST_SHUTDOWN_GRACEFUL
     if not LAST_SHUTDOWN_GRACEFUL:
@@ -67,6 +68,7 @@ async def on_ready():
         json.dump(config, conf, separators=(",\n", ":"), indent="")
     LAST_SHUTDOWN_GRACEFUL = False
     
+
     # sets main_guild to be the guild of name GUILD in the config
     # if one is present
     global main_guild
@@ -107,17 +109,15 @@ async def on_ready():
                 emojis[emoji.name] = f"<a:{emoji.name}:{emoji.id}>"
             else:
                 emojis[emoji.name] = f"<:{emoji.name}:{emoji.id}>"
-
-    for emoji in emojis.values():
-        emoji_list.append(emoji)
+        emoji_list = emojis.values()
 
 
     # cute header with guild and self info
-    print("*"*35)
+    print("*"*35 + "\n")
     print(f"\n{bot.user} has successfully connected to Discord and is readied!")
     if main_guild_e:
         print(f"{bot.user} has access to Main Guild: \n\t{main_guild.name}(id: {main_guild.id})\n")
-    print("*"*35)    
+    print("*"*35 + "\n")    
 
 
     # prints a list of guilds and members attached to their nicknames
@@ -139,19 +139,22 @@ async def on_ready():
 # a function to parse messages
 @bot.event
 async def on_message(message):
-
-    # random emoji used in some replies
-    rand_emoji = random.choice(emoji_list)
     # skips bad recursion
     if message.author == bot.user:
         return
     
+    
+    # random emoji used in some replies
+    rand_emoji = random.choice(emoji_list)
+    
+
     # records bot mentions
     if f"<@{bot.user.id}>" in message.content or f"<@!{bot.user.id}>" in message.content:
         global BOT_MENTIONS
         BOT_MENTIONS += 1
         print("Bot was mentioned")
         await message.channel.send(f"{message.author.mention} no you.")
+
 
     #increment stat
     global TOTAL_MESSAGES_SENT
@@ -209,23 +212,23 @@ async def play(ctx):
 async def p(ctx):
     await play(ctx)
 
-
+# cute take on ping and pong
 @bot.command()
 async def ping(ctx):
     await ctx.send("What does a battle rifle have in common with a microwave?")
 
-
+# cute tak on ping and pong
 @bot.command()
 async def pong(ctx):
     await ctx.send("They both go 'ping' when they're done.")
 
 
 # creates a graceful shutdown of this bot
-# writes new config stats using configparser
+# writes new config stats
 @bot.command()
 async def close(ctx):
     if ctx.author.name != OPERATOR:
-        print(f"someone tried to close the bot: {ctx.author.name}")
+        print(f"someone unauthorized tried to close the bot: {ctx.author.name}")
         return
     await ctx.send("Starting Graceful Shutdown...")
 
@@ -243,5 +246,5 @@ async def close(ctx):
 # runs the bot object and connects
 # prints a shutdown message and a separator
 bot.run(TOKEN)
-print("Shutdown")
+print("SHUTDOWN COMPLETE")
 print("*"*35 + "\n\n\n")

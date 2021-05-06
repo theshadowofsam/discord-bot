@@ -13,13 +13,12 @@ import os
 import discord
 import re
 import json
+import sys
 
 from discord.ext import commands
 from dotenv import load_dotenv
 from threading import Thread
 
-# the next 33 lines are all global variables which is why
-# they arent in a function. I should make this a class
 
 """
 
@@ -54,19 +53,37 @@ print(f"PREFIX = {PREFIX}")
 
 BOT_TEXT_CHANNELS = {}
 """
+# parsing config and setting global variables
+with open("config.json") as jf:
+    config = json.load(jf)
+
+TOTAL_MESSAGES_SENT = config["stats"]["total_messages_sent"]
+BOT_MENTIONS = config["stats"]["bot_mentions"]
+LAST_SHUTDOWN_GRACEFUL = config["stats"]["last_shutdown_graceful"]
+print(f"Total Messages recorded = {TOTAL_MESSAGES_SENT}\nBot mentions = {BOT_MENTIONS}\nLast Shutdown Graceful = {LAST_SHUTDOWN_GRACEFUL}")
+
+TOKEN = config["env"]["token"]
+GUILD = config["env"]["guild"]
+PREFIX = config["env"]["prefix"]
+print(f"Bot Token = {TOKEN}\nGuild = {GUILD}\nCommand Prefix = {PREFIX}")
+
+BOT_TEXT_CHANNELS = config["bot_text_channels"]
+print(f"Bot Guilds and Channels:")
+for key in BOT_TEXT_CHANNELS.keys():
+    print(f"{key} : {BOT_TEXT_CHANNELS[key]}")
+
+sys.exit()
 
 # creating intents for the bot 
-# my understanding is that these are more specialized permissions???
 intents = discord.Intents.default()
-intents.members = True # not sure what this is for look up the documentation later
+intents.members = True
 
 
 # creates the discord bot object
 bot = commands.Bot(command_prefix = '!', intents = intents)
 
 
-# on_ready() is called when the bot connects apparently so everything
-# in here will run 
+# on_ready() is called when the bot connects and is readied
 @bot.event
 async def on_ready():
     
@@ -74,8 +91,6 @@ async def on_ready():
     global LAST_SHUTDOWN_GRACEFUL
     if not LAST_SHUTDOWN_GRACEFUL:
         print("\nThe previous shutdown was NOT graceful!\nSome data has been lost!\n")
-
-
     config['STATS']['LAST_SHUTDOWN_GRACEFUL'] = "False"
     with open("config.ini", 'w') as conf:
         config.write(conf)

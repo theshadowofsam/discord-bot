@@ -183,7 +183,7 @@ async def on_raw_message_delete(payload):
             break
 
 
-# responds to !gay
+# sets a main channel for the guild and channel this command was called in
 @bot.command()
 async def set_default_channel(ctx):
     print("!set_default_channel called")
@@ -200,9 +200,7 @@ async def set_default_channel(ctx):
 @bot.command()
 async def play(ctx):
     print("!play called")
-    emoji = "noog"
-    
-    await ctx.send(f"<@235088799074484224> is a {emojis[emoji]}")
+    await ctx.send(f"<@235088799074484224> is a {rand_emoji}")
 
 
 # alias for play()

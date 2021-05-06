@@ -1,0 +1,5 @@
+{
+    "stats":{"total_messages_sent":8, "bot_mentions":0, "last_shutdown_graceful":true},
+    "env":{"token":"ODMxMjMyNzcwNTUzNTQ0NzM1.YHSP2A.x-5nlnETsc-cgKGijOrsKX3q37E", "guild":"The Kingdom", "prefix":"!"},
+    "bot_text_channels":{}
+}

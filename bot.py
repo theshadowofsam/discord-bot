@@ -36,9 +36,13 @@ PREFIX = config["env"]["prefix"]
 print(f"Bot Token = {TOKEN}\nGuild = {GUILD}\nCommand Prefix = {PREFIX}")
 
 BOT_TEXT_CHANNELS = config["bot_text_channels"]
-print(f"Bot Guilds and Channels:")
+
+OPERATOR = config["operator"]
+print(f"Operator discord name: {OPERATOR}")
+
+print(f"Bound Bot Guilds and Channels:")
 for key in BOT_TEXT_CHANNELS.keys():
-    print(f"{key} : {BOT_TEXT_CHANNELS[key]}")
+    print(f"\t{key} : {BOT_TEXT_CHANNELS[key]}")
 
 
 # creating intents for the bot 
@@ -47,7 +51,7 @@ intents.members = True
 
 
 # creates the discord bot object
-bot = commands.Bot(command_prefix = '!', intents = intents)
+bot = commands.Bot(command_prefix = PREFIX, intents = intents)
 
 
 # on_ready() is called when the bot connects and is readied
@@ -58,11 +62,10 @@ async def on_ready():
     global LAST_SHUTDOWN_GRACEFUL
     if not LAST_SHUTDOWN_GRACEFUL:
         print("\nThe previous shutdown was NOT graceful!\nSome data has been lost!\n")
-        LAST_SHUTDOWN_GRACEFUL = False
-        config["stats"]["last_shutdown_graceful"] = False
-        with open("config.json", 'w') as conf:
-            json.dump(config, conf)
-
+    config["stats"]["last_shutdown_graceful"] = False
+    with open("config.json", 'w') as conf:
+        json.dump(config, conf)
+    LAST_SHUTDOWN_GRACEFUL = False
     
     # sets main_guild to be the guild of name GUILD in the config
     # if one is present
@@ -112,7 +115,7 @@ async def on_ready():
     print("*"*35)
     print(f"{bot.user} has successfully connected to Discord and is readied!")
     if main_guild_e:
-        print(f"{bot.user} has access to Main Guild: \n{guild.name}(id: {guild.id})")
+        print(f"{bot.user} has access to Main Guild: \n{main_guild.name}(id: {main_guild.id})")
     print("*"*35)    
 
 
@@ -122,9 +125,9 @@ async def on_ready():
         print(f"{guild.name} - Members:")
         for member in guild.members:
             if member.nick != None:
-                print(f"\t - {member.name} has the nickname {member.nick}")
+                print(f"\t - '{member.name}' has the nickname '{member.nick}'")
             else:
-                print(f"\t - {member.name}")   
+                print(f"\t - '{member.name}'")   
     
 
     #prints a message in discord when the bot comes online
@@ -216,7 +219,7 @@ async def pong(ctx):
 # writes new config stats using configparser
 @bot.command()
 async def close(ctx):
-    if ctx.author.name != "theshadowofsam":
+    if ctx.author.name != OPERATOR:
         return
     await ctx.send("Starting Graceful Shutdown...")
 

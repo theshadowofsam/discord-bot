@@ -185,10 +185,15 @@ async def on_raw_message_delete(payload):
 
 # responds to !gay
 @bot.command()
-async def gay(ctx):
-    print("!gay called")
-    emoji = "noog"
-    await ctx.send(f"@everyone is a {emojis[emoji]}")
+async def set_default_channel(ctx):
+    print("!set_default_channel called")
+    if not ctx.author.guild_permissions.administrator:
+        print("Unauthorized user called set_default_channel")
+        return
+    global BOT_TEXT_CHANNELS
+    BOT_TEXT_CHANNELS[f"{ctx.guild}"] = ctx.message.channel.id
+    print(f"{ctx.guild} = {ctx.message.channel.id}")
+    await ctx.send(f"This channel was bound as {ctx.guild}'s Jester_ channel!")
 
 
 # makes fun of rythm bot

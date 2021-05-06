@@ -20,40 +20,8 @@ from dotenv import load_dotenv
 from threading import Thread
 
 
-"""
-
-
-
-In the process of deprecating
-
-
-
-# loads config file using configparser module
-config = cp.ConfigParser()
-config.read("config.ini")
-
-# intitalizes config file values as global vars
-# also prints them to python console for confirmation
-TOTAL_MESSAGES_SENT = config.getint('STATS', 'total_messages_sent')
-BOT_MENTIONS = config.getint('STATS', 'bot_mentions')
-LAST_SHUTDOWN_GRACEFUL = config.getboolean('STATS', 'last_shutdown_graceful')
-
-print("local values:")
-print(f"TOTAL_MESSAGES_SENT = {TOTAL_MESSAGES_SENT}")
-print(f"BOT_MENTIONS = {BOT_MENTIONS}")
-print(f"LAST_SHUTDOWN_GRACEFUL = {LAST_SHUTDOWN_GRACEFUL}")
-
-TOKEN = config['ENV']['TOKEN']
-GUILD = config['ENV']['GUILD']
-PREFIX = config['ENV']['PREFIX']
-
-print(f"TOKEN = {TOKEN}")
-print(f"GUILD = {GUILD}")
-print(f"PREFIX = {PREFIX}")
-
-BOT_TEXT_CHANNELS = {}
-"""
 # parsing config and setting global variables
+# prints them all to console for confirmation
 with open("config.json") as jf:
     config = json.load(jf)
 
@@ -72,7 +40,6 @@ print(f"Bot Guilds and Channels:")
 for key in BOT_TEXT_CHANNELS.keys():
     print(f"{key} : {BOT_TEXT_CHANNELS[key]}")
 
-sys.exit()
 
 # creating intents for the bot 
 intents = discord.Intents.default()
@@ -91,62 +58,78 @@ async def on_ready():
     global LAST_SHUTDOWN_GRACEFUL
     if not LAST_SHUTDOWN_GRACEFUL:
         print("\nThe previous shutdown was NOT graceful!\nSome data has been lost!\n")
-    config['STATS']['LAST_SHUTDOWN_GRACEFUL'] = "False"
-    with open("config.ini", 'w') as conf:
-        config.write(conf)
-    
-    
-    # I designed the bot for the GUILD env variable guild 
-    # coincidentally this is the first time I have used a lambda function
-    # this sets the guild to be the guild in bot.guilds of name GUILD
-    guild = discord.utils.find(lambda g: g.name == GUILD, bot.guilds)
+        LAST_SHUTDOWN_GRACEFUL = False
+        config["stats"]["last_shutdown_graceful"] = False
+        with open("config.json", 'w') as conf:
+            json.dump(config, conf)
 
-    # setting some global variables
-    global main_text_channel 
-    main_text_channel = guild.get_channel(311217930522066944)
     
+    # sets main_guild to be the guild of name GUILD in the config
+    # if one is present
+    global main_guild
+    global main_guild_e
+    try:
+        main_guild = discord.utils.find(lambda g: g.name == GUILD, bot.guilds)
+        main_guild_e = True
+    except Exception() as e:
+        print(f"A GUILD error occurred: {e}")
+        main_guild_e = False
+
+
+    # setting some more global variables
     global emojis
     emojis = {}
-    
     global emoji_list
-    emoji_list = []
+    emoji_list = []    
+
+    if main_guild_e:
+        global main_guild_text_channel
+        main_guild_text_channel = main_guild.get_channel(BOT_TEXT_CHANNELS[GUILD])
+
     
     # keywords that on_message() uses
     global words_list
     words_list = [
+        "bot",
         "nerd",
-        "ape",
-        "smoothbrain"
+        "machine",
     ]
 
+
     # creates easy to use emojis for the bot
-    for emoji in guild.emojis:
-        if emoji.animated:
-            emojis[emoji.name] = f"<a:{emoji.name}:{emoji.id}>"
-        else:
-            emojis[emoji.name] = f"<:{emoji.name}:{emoji.id}>"
+    for guild in bot.guilds:
+        for emoji in guild.emojis:
+            if emoji.animated:
+                emojis[emoji.name] = f"<a:{emoji.name}:{emoji.id}>"
+            else:
+                emojis[emoji.name] = f"<:{emoji.name}:{emoji.id}>"
 
     for emoji in emojis.values():
         emoji_list.append(emoji)
 
+
     # cute header with guild and self info
     print("*"*35)
-    print(f"{bot.user} has successfully connected to Discord!")
-    if guild.name == GUILD:
-            print("In correct guild.")
-    print(f"{bot.user} is connected to: \n{guild.name}(id: {guild.id})")
+    print(f"{bot.user} has successfully connected to Discord and is readied!")
+    if main_guild_e:
+        print(f"{bot.user} has access to Main Guild: \n{guild.name}(id: {guild.id})")
     print("*"*35)    
 
-    # prints a list of guild members attached to their nicknames
-    print("Guild Memebers: ")
-    for member in guild.members:
-        if member.nick != None:
-            print(f" - {member.name} has the nickname {member.nick}")
-        else:
-            print(f" - {member.name}")
+
+    # prints a list of guilds and members attached to their nicknames
+    print("Guilds: ")
+    for guild in bot.guilds:
+        print(f"{guild.name} - Members:")
+        for member in guild.members:
+            if member.nick != None:
+                print(f"\t - {member.name} has the nickname {member.nick}")
+            else:
+                print(f"\t - {member.name}")   
     
+
     #prints a message in discord when the bot comes online
-    await main_text_channel.send("Successfuly Joined")
+    if main_guild_e:
+        await main_guild_text_channel.send("Successfuly Joined")
 
 
 # a function to parse messages
@@ -237,12 +220,12 @@ async def close(ctx):
         return
     await ctx.send("Starting Graceful Shutdown...")
 
-    config['STATS']['TOTAL_MESSAGES_SENT'] = str(TOTAL_MESSAGES_SENT)
-    config['STATS']['BOT_MENTIONS'] = str(BOT_MENTIONS)
-    config['STATS']['LAST_SHUTDOWN_GRACEFUL'] = "True"
+    config['stats']['total_messages_sent'] = TOTAL_MESSAGES_SENT
+    config['stats']['bot_mentions'] = BOT_MENTIONS
+    config['stats']['last_shutdown_graceful'] = True
 
-    with open("config.ini", 'w') as conf:
-        config.write(conf)
+    with open("config.json", 'w') as conf:
+        json.dump(config, conf)
 
     await ctx.send("Done!")
     await bot.close()

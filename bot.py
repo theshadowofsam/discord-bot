@@ -200,6 +200,7 @@ async def set_default_channel(ctx):
 @bot.command()
 async def play(ctx):
     print("!play called")
+    rand_emoji = random.choice(emoji_list)
     await ctx.send(f"<@235088799074484224> is a {rand_emoji}")
 
 

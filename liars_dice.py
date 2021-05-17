@@ -7,7 +7,6 @@ this is an implementation of a liars dice type game
 written primarily for my discord bot
 implements my simple dice rolling script
 """
-import dice
 import random
 
 class Game:

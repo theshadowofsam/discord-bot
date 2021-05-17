@@ -12,7 +12,9 @@
     
     "guild":"your main guild name",
     
-    "prefix":"!"
+    "prefix":"!",
+
+    "logging":false
     },
     
     "bot_text_channels":{

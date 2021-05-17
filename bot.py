@@ -35,12 +35,18 @@ print(f"Bot Token = {TOKEN}\nGuild = {GUILD}\nCommand Prefix = {PREFIX}")
 
 BOT_TEXT_CHANNELS = config["bot_text_channels"]
 
+LOGGING = config["env"]["logging"]
+print(f"LOGGING = {LOGGING}")
+
 OPERATOR = config["operator"]
 print(f"Operator discord name: {OPERATOR}")
 
 print(f"Bound Bot Guilds and Channels:")
 for key in BOT_TEXT_CHANNELS.keys():
     print(f"\t{key} : {BOT_TEXT_CHANNELS[key]}")
+
+# checks for and creates logs/messages/ directory
+os.makedirs(os.path.join(os.getcwd(), os.path.dirname("logs/messages/")), exist_ok=True)
 
 
 # creating intents for the bot 
@@ -70,13 +76,13 @@ async def on_ready():
     # sets main_guild to be the guild of name GUILD in the config
     # if one is present
     global main_guild
-    global main_guild_e
+    global main_guild_exists
     try:
         main_guild = discord.utils.find(lambda g: g.name == GUILD, bot.guilds)
-        main_guild_e = True
+        main_guild_exists = True
     except Exception() as e:
         print(f"A GUILD error occurred: {e}")
-        main_guild_e = False
+        main_guild_exists = False
 
 
     # setting some more global variables
@@ -85,7 +91,7 @@ async def on_ready():
     emojis = {}
     global emoji_list
     emoji_list = []    
-    if main_guild_e:
+    if main_guild_exists:
         main_guild_text_channel = main_guild.get_channel(BOT_TEXT_CHANNELS[GUILD])
         print(main_guild)
         print(main_guild_text_channel)
@@ -107,13 +113,13 @@ async def on_ready():
                 emojis[emoji.name] = f"<a:{emoji.name}:{emoji.id}>"
             else:
                 emojis[emoji.name] = f"<:{emoji.name}:{emoji.id}>"
-        emoji_list = emojis.values()
+            emoji_list.append(emoji.name)
 
 
     # cute header with guild and self info
     print("*"*35 + "\n")
     print(f"\n{bot.user} has successfully connected to Discord and is readied!")
-    if main_guild_e:
+    if main_guild_exists:
         print(f"{bot.user} has access to Main Guild: \n\t{main_guild.name}(id: {main_guild.id})\n")
     print("*"*35 + "\n")    
 
@@ -130,7 +136,7 @@ async def on_ready():
     
 
     #prints a message in discord when the bot comes online
-    if main_guild_e:
+    if main_guild_exists:
         await main_guild_text_channel.send("Successfuly Joined")
 
 
@@ -141,6 +147,13 @@ async def on_message(message):
     if message.author == bot.user:
         return
     
+
+    if LOGGING:
+        logdir = f"logs/messages/{message.guild.id}.txt"
+        with open(os.path.join(os.getcwd(), logdir), mode="a") as log:
+            lines = f"\nMessage ID: {message.id}\nAuthor: {message.author}\nTime: {message.created_at}\nContents:\n" + "-"*35 + f"\n{message.content}\n" + "-"*35 + "\n"
+            log.write(lines)
+
     
     # random emoji used in some replies
     rand_emoji = random.choice(emoji_list)
@@ -180,7 +193,7 @@ async def on_raw_message_delete(payload):
             if payload.cached_message.author.bot:
                 return
             author = payload.cached_message.author
-            await channel.send(f'{author.mention} was naughty and deleted the following message:\n\n"{payload.cached_message.content}"')
+            await channel.send(f'{author.mention} was naughty and deleted the following message:\n"{payload.cached_message.content}"')
             break
 
 
@@ -221,6 +234,31 @@ async def pong(ctx):
     await ctx.send("They both go 'ping' when they're done.")
 
 
+@bot.command()
+async def log(ctx):
+    global LOGGING
+    if not ctx.author.guild_permissions.administrator:
+        print(f"Unauthorized user {ctx.author} called log")
+        return
+    
+    if LOGGING:
+        LOGGING = False
+    else:
+        LOGGING = True    
+    
+    if ctx.guild.name in BOT_TEXT_CHANNELS.keys():
+        channel = discord.utils.get(ctx.guild.text_channels, id=BOT_TEXT_CHANNELS[ctx.guild.name])
+        if LOGGING:
+            await channel.send("Began Logging")
+        else:
+            await channel.send("Stopped Logging")
+    else:
+        if LOGGING:
+            await ctx.send("Began Logging")
+        else:
+            await ctx.send("Stopped Logging")
+
+
 # creates a graceful shutdown of this bot
 # writes new config stats
 @bot.command()
@@ -233,6 +271,7 @@ async def close(ctx):
     config['stats']['total_messages_sent'] = TOTAL_MESSAGES_SENT
     config['stats']['bot_mentions'] = BOT_MENTIONS
     config['stats']['last_shutdown_graceful'] = True
+    config['env']['logging'] = LOGGING
 
     with open("config.json", 'w') as conf:
         json.dump(config, conf, separators=(",\n", ":"), indent="")

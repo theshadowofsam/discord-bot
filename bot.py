@@ -255,16 +255,16 @@ async def log(ctx, event=None, message=None):
         MESSAGE_LOGGING = not MESSAGE_LOGGING
 
     else:
-        if event == "0":
+        if event.lower() in ["0", "no", "false"]:
             EVENT_LOGGING = False
-        elif event == "1":
+        elif event.lower() in ["1", "yes", "true"]:
             EVENT_LOGGING = True
         else:
             pass
 
-        if message == "0":
+        if message.lower() in ["0", "no", "false"]:
             MESSAGE_LOGGING = False
-        elif message == "1":
+        elif message.lower() in ["1", "yes", "true"]:
             MESSAGE_LOGGING = True
         else:
             pass

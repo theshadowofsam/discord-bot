@@ -36,8 +36,11 @@ print(f"Bot Token = {TOKEN}\nGuild = {GUILD}\nCommand Prefix = {PREFIX}")
 
 BOT_TEXT_CHANNELS = config["bot_text_channels"]
 
-LOGGING = config["env"]["logging"]
-print(f"LOGGING = {LOGGING}")
+MESSAGE_LOGGING = config["env"]["message_logging"]
+print(f"MESSAGE_LOGGING = {MESSAGE_LOGGING}")
+
+EVENT_LOGGING = config["env"]["event_logging"]
+print(f"EVENT_LOGGING = {EVENT_LOGGING}")
 
 OPERATOR = config["operator"]
 print(f"Operator discord name: {OPERATOR}")
@@ -62,13 +65,13 @@ bot = commands.Bot(command_prefix = PREFIX, intents = intents)
 # on_ready() is called when the bot connects and is readied
 @bot.event
 async def on_ready():
-    eventlog("on_ready called", "READDY")
+    eventlog("on_ready called", "READY")
     
 
     # check and response for an abrupt previous shutdown
     global LAST_SHUTDOWN_GRACEFUL
     if not LAST_SHUTDOWN_GRACEFUL:
-        print("\nThe previous shutdown was NOT graceful!\nSome data has been lost!\n")
+        print("The previous shutdown was NOT graceful!\nSome data has been lost!")
     config["stats"]["last_shutdown_graceful"] = False
     with open("config.json", 'w') as conf:
         json.dump(config, conf, separators=(",\n", ":"), indent="")
@@ -141,7 +144,7 @@ async def on_ready():
     if main_guild_exists:
         await main_guild_text_channel.send("Successfuly Joined")
     
-    eventlog("on_ready finish", "READDY")
+    eventlog("on_ready finish", "READY")
 
 
 # a function to parse messages
@@ -152,7 +155,7 @@ async def on_message(message):
         return
     
 
-    if LOGGING:
+    if MESSAGE_LOGGING:
         logdir = f"logs/messages/{message.guild.id}.txt"
         with open(os.path.join(os.getcwd(), logdir), mode="a") as log:
             lines = f"\nMessage ID: {message.id}\nAuthor: {message.author}\nTime: {message.created_at}\nContents:\n" + "-"*35 + f"\n{message.content}\n" + "-"*35 + "\n"
@@ -189,14 +192,18 @@ async def on_message(message):
 async def on_raw_message_delete(payload):
     if payload.cached_message is None:
         return
+    
     guild_id = payload.guild_id
     channel_id = payload.channel_id
     guild = bot.get_guild(guild_id)
+   
     for channel in guild.text_channels:
         if channel.id == channel_id:
             if payload.cached_message.author.bot:
                 return
+            
             author = payload.cached_message.author
+            
             await channel.send(f'{author.mention} was naughty and deleted the following message:\n"{payload.cached_message.content}"')
             break
 
@@ -244,29 +251,31 @@ async def pong(ctx):
 
 # toggles logging of messages
 @bot.command()
-async def log(ctx):
-    global LOGGING
+async def log(ctx): 
     if not ctx.author.guild_permissions.administrator:
         print(f"Unauthorized user {ctx.author.name} called log")
         eventlog(f"Unauthorized LOG event called by {ctx.author.name}", "ERR")
         return
     
-    if LOGGING:
-        LOGGING = False
+    global MESSAGE_LOGGING
+
+    if MESSAGE_LOGGING:
+        MESSAGE_LOGGING = False
     else:
-        LOGGING = True    
+        MESSAGE_LOGGING = True    
     
     if ctx.guild.name in BOT_TEXT_CHANNELS.keys():
         channel = discord.utils.get(ctx.guild.text_channels, id=BOT_TEXT_CHANNELS[ctx.guild.name])
-        if LOGGING:
+        if MESSAGE_LOGGING:
             await channel.send("Began Logging")
         else:
             await channel.send("Stopped Logging")
     else:
-        if LOGGING:
+        if MESSAGE_LOGGING:
             await ctx.send("Began Logging")
         else:
             await ctx.send("Stopped Logging")
+    
     eventlog("Logging toggled", "CMD")
 
 
@@ -283,20 +292,27 @@ async def close(ctx):
     config['stats']['total_messages_sent'] = TOTAL_MESSAGES_SENT
     config['stats']['bot_mentions'] = BOT_MENTIONS
     config['stats']['last_shutdown_graceful'] = True
-    config['env']['logging'] = LOGGING
+    config['env']['logging'] = MESSAGE_LOGGING
+    config['env']['eventlog'] = True
 
     with open("config.json", 'w') as conf:
         json.dump(config, conf, separators=(",\n", ":"), indent="")
 
     await ctx.send("Done!")
+    
     eventlog("Close Event", "CLOSE")
+   
     await bot.close()
 
 
 def eventlog(message, stream):
+    if not EVENT_LOGGING:
+        return
+    
     date = datetime.datetime
     timestamp = date.now()
     logdir = f"logs/bot/eventlog.txt"
+    
     with open(os.path.join(os.getcwd(), logdir), mode="a") as log:
         log.write(f"{timestamp} {stream}:\t{message}\n")
         

@@ -14,7 +14,9 @@
     
     "prefix":"!",
 
-    "logging":false
+    "message_logging":false,
+
+    "event_logging":false
     },
     
     "bot_text_channels":{

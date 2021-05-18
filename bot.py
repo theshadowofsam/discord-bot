@@ -65,6 +65,10 @@ bot = commands.Bot(command_prefix = PREFIX, intents = intents)
 @bot.event
 async def on_ready():
     eventlog("on_ready called", "READY")
+
+    for guild in bot.guilds:
+        for channel in guild.text_channels:
+            os.makedirs(os.path.join(os.getcwd(), os.path.dirname(f"logs/messages/{guild.id}/")), exist_ok=True)
     
     # check and response for an abrupt previous shutdown
     global LAST_SHUTDOWN_GRACEFUL
@@ -147,9 +151,15 @@ async def on_message(message):
     
     # logs messages in the realtive servers message log
     if MESSAGE_LOGGING:
-        logdir = f"logs/messages/{message.guild.id}.txt"
+        logdir = f"logs/messages/{message.guild.id}/{message.channel.name}.txt"
+        mentions = ""
+        if len(message.mentions) != 0:
+            for user in message.mentions:
+                mentions += f"\n\t{user.name} : {user.id}"
+        else:
+            mentions = "\n\tNone"
         with open(os.path.join(os.getcwd(), logdir), mode="a") as log:
-            lines = f"\nMessage ID: {message.id}\nAuthor: {message.author}\nTime: {message.created_at}\nContents:\n" + "-"*35 + f"\n{message.content}\n" + "-"*35 + "\n"
+            lines = f"\nMessage ID: {message.id}\nAuthor: {message.author}\nTime: {message.created_at}\nMentions: {mentions}\nContents:\n" + "-"*35 + f"\n{message.content}\n" + "-"*35 + "\n"
             log.write(lines)
 
     # random emoji used in some replies

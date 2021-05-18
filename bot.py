@@ -24,7 +24,6 @@ from discord.ext import commands
 with open("config.json") as jf:
     config = json.load(jf)
 
-
 TOTAL_MESSAGES_SENT = config["stats"]["total_messages_sent"]
 BOT_MENTIONS = config["stats"]["bot_mentions"]
 LAST_SHUTDOWN_GRACEFUL = config["stats"]["last_shutdown_graceful"]
@@ -262,7 +261,7 @@ async def log(ctx, event=None, message=None):
             EVENT_LOGGING = True
         else:
             pass
-        
+
         if message == "0":
             MESSAGE_LOGGING = False
         elif message == "1":

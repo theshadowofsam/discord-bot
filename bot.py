@@ -14,6 +14,7 @@ import discord
 import re
 import json
 import sys
+import datetime
 
 from discord.ext import commands
 
@@ -45,9 +46,9 @@ print(f"Bound Bot Guilds and Channels:")
 for key in BOT_TEXT_CHANNELS.keys():
     print(f"\t{key} : {BOT_TEXT_CHANNELS[key]}")
 
-# checks for and creates logs/messages/ directory
+# checks for and creates logs/messages/ and logs/bot/ directory
 os.makedirs(os.path.join(os.getcwd(), os.path.dirname("logs/messages/")), exist_ok=True)
-
+os.makedirs(os.path.join(os.getcwd(), os.path.dirname("logs/bot/")), exist_ok=True)
 
 # creating intents for the bot 
 intents = discord.Intents.default()
@@ -61,6 +62,7 @@ bot = commands.Bot(command_prefix = PREFIX, intents = intents)
 # on_ready() is called when the bot connects and is readied
 @bot.event
 async def on_ready():
+    eventlog("on_ready called", "READDY")
     
 
     # check and response for an abrupt previous shutdown
@@ -113,7 +115,7 @@ async def on_ready():
                 emojis[emoji.name] = f"<a:{emoji.name}:{emoji.id}>"
             else:
                 emojis[emoji.name] = f"<:{emoji.name}:{emoji.id}>"
-            emoji_list.append(emoji.name)
+            emoji_list.append(emojis[emoji.name])
 
 
     # cute header with guild and self info
@@ -138,6 +140,8 @@ async def on_ready():
     #prints a message in discord when the bot comes online
     if main_guild_exists:
         await main_guild_text_channel.send("Successfuly Joined")
+    
+    eventlog("on_ready finish", "READDY")
 
 
 # a function to parse messages
@@ -203,6 +207,7 @@ async def set_default_channel(ctx):
     print("!set_default_channel called")
     if not ctx.author.guild_permissions.administrator:
         print("Unauthorized user called set_default_channel")
+        eventlog(f"Unauthorized set_default_channel called by {ctx.author.name}", "ERR")
         return
     global BOT_TEXT_CHANNELS
     BOT_TEXT_CHANNELS[f"{ctx.guild}"] = ctx.message.channel.id
@@ -216,6 +221,7 @@ async def play(ctx):
     print("!play called")
     rand_emoji = random.choice(emoji_list)
     await ctx.send(f"<@235088799074484224> is a {rand_emoji}")
+    eventlog("play command called", "CMD")
 
 
 # alias for play()
@@ -223,22 +229,26 @@ async def play(ctx):
 async def p(ctx):
     await play(ctx)
 
+
 # cute take on ping and pong
 @bot.command()
 async def ping(ctx):
     await ctx.send("What does a battle rifle have in common with a microwave?")
+    eventlog("ping command called", "CMD")
 
 # cute tak on ping and pong
 @bot.command()
 async def pong(ctx):
     await ctx.send("They both go 'ping' when they're done.")
+    eventlog("pong command called", "CMD")
 
-
+# toggles logging of messages
 @bot.command()
 async def log(ctx):
     global LOGGING
     if not ctx.author.guild_permissions.administrator:
-        print(f"Unauthorized user {ctx.author} called log")
+        print(f"Unauthorized user {ctx.author.name} called log")
+        eventlog(f"Unauthorized LOG event called by {ctx.author.name}", "ERR")
         return
     
     if LOGGING:
@@ -257,6 +267,7 @@ async def log(ctx):
             await ctx.send("Began Logging")
         else:
             await ctx.send("Stopped Logging")
+    eventlog("Logging toggled", "CMD")
 
 
 # creates a graceful shutdown of this bot
@@ -265,6 +276,7 @@ async def log(ctx):
 async def close(ctx):
     if ctx.author.name != OPERATOR:
         print(f"someone unauthorized tried to close the bot: {ctx.author.name}")
+        eventlog(f"Unauthorized CLOSE Event Called by {ctx.author.name}", "ERR")
         return
     await ctx.send("Starting Graceful Shutdown...")
 
@@ -277,8 +289,17 @@ async def close(ctx):
         json.dump(config, conf, separators=(",\n", ":"), indent="")
 
     await ctx.send("Done!")
+    eventlog("Close Event", "CLOSE")
     await bot.close()
 
+
+def eventlog(message, stream):
+    date = datetime.datetime
+    timestamp = date.now()
+    logdir = f"logs/bot/eventlog.txt"
+    with open(os.path.join(os.getcwd(), logdir), mode="a") as log:
+        log.write(f"{timestamp} {stream}:\t{message}\n")
+        
 
 # runs the bot object and connects
 # prints a shutdown message and a separator

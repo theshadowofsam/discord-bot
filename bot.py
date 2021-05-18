@@ -24,6 +24,7 @@ from discord.ext import commands
 with open("config.json") as jf:
     config = json.load(jf)
 
+
 TOTAL_MESSAGES_SENT = config["stats"]["total_messages_sent"]
 BOT_MENTIONS = config["stats"]["bot_mentions"]
 LAST_SHUTDOWN_GRACEFUL = config["stats"]["last_shutdown_graceful"]
@@ -45,9 +46,9 @@ print(f"EVENT_LOGGING = {EVENT_LOGGING}")
 OPERATOR = config["operator"]
 print(f"Operator discord name: {OPERATOR}")
 
-print(f"Bound Bot Guilds and Channels:")
 for key in BOT_TEXT_CHANNELS.keys():
     print(f"\t{key} : {BOT_TEXT_CHANNELS[key]}")
+print(f"Bound Bot Guilds and Channels:")
 
 # checks for and creates logs/messages/ and logs/bot/ directory
 os.makedirs(os.path.join(os.getcwd(), os.path.dirname("logs/messages/")), exist_ok=True)
@@ -56,7 +57,6 @@ os.makedirs(os.path.join(os.getcwd(), os.path.dirname("logs/bot/")), exist_ok=Tr
 # creating intents for the bot 
 intents = discord.Intents.default()
 intents.members = True
-
 
 # creates the discord bot object
 bot = commands.Bot(command_prefix = PREFIX, intents = intents)
@@ -67,7 +67,6 @@ bot = commands.Bot(command_prefix = PREFIX, intents = intents)
 async def on_ready():
     eventlog("on_ready called", "READY")
     
-
     # check and response for an abrupt previous shutdown
     global LAST_SHUTDOWN_GRACEFUL
     if not LAST_SHUTDOWN_GRACEFUL:
@@ -77,7 +76,6 @@ async def on_ready():
         json.dump(config, conf, separators=(",\n", ":"), indent="")
     LAST_SHUTDOWN_GRACEFUL = False
     
-
     # sets main_guild to be the guild of name GUILD in the config
     # if one is present
     global main_guild
@@ -88,7 +86,6 @@ async def on_ready():
     except Exception() as e:
         print(f"A GUILD error occurred: {e}")
         main_guild_exists = False
-
 
     # setting some more global variables
     global main_guild_text_channel
@@ -101,7 +98,6 @@ async def on_ready():
         print(main_guild)
         print(main_guild_text_channel)
 
-    
     # keywords that on_message() uses
     global words_list
     words_list = [
@@ -109,7 +105,6 @@ async def on_ready():
         "nerd",
         "machine",
     ]
-
 
     # creates easy to use emojis for the bot
     for guild in bot.guilds:
@@ -120,14 +115,12 @@ async def on_ready():
                 emojis[emoji.name] = f"<:{emoji.name}:{emoji.id}>"
             emoji_list.append(emojis[emoji.name])
 
-
     # cute header with guild and self info
     print("*"*35 + "\n")
     print(f"\n{bot.user} has successfully connected to Discord and is readied!")
     if main_guild_exists:
         print(f"{bot.user} has access to Main Guild: \n\t{main_guild.name}(id: {main_guild.id})\n")
     print("*"*35 + "\n")    
-
 
     # prints a list of guilds and members attached to their nicknames
     print("Guilds: ")
@@ -139,7 +132,6 @@ async def on_ready():
             else:
                 print(f"\t - '{member.name}'")   
     
-
     #prints a message in discord when the bot comes online
     if main_guild_exists:
         await main_guild_text_channel.send("Successfuly Joined")
@@ -154,17 +146,15 @@ async def on_message(message):
     if message.author == bot.user:
         return
     
-
+    # logs messages in the realtive servers message log
     if MESSAGE_LOGGING:
         logdir = f"logs/messages/{message.guild.id}.txt"
         with open(os.path.join(os.getcwd(), logdir), mode="a") as log:
             lines = f"\nMessage ID: {message.id}\nAuthor: {message.author}\nTime: {message.created_at}\nContents:\n" + "-"*35 + f"\n{message.content}\n" + "-"*35 + "\n"
             log.write(lines)
 
-    
     # random emoji used in some replies
     rand_emoji = random.choice(emoji_list)
-    
 
     # records bot mentions
     if f"<@{bot.user.id}>" in message.content or f"<@!{bot.user.id}>" in message.content:
@@ -172,7 +162,6 @@ async def on_message(message):
         BOT_MENTIONS += 1
         print("Bot was mentioned")
         await message.channel.send(f"{message.author.mention} no you.")
-
 
     #increment stat
     global TOTAL_MESSAGES_SENT
@@ -243,38 +232,47 @@ async def ping(ctx):
     await ctx.send("What does a battle rifle have in common with a microwave?")
     eventlog("ping command called", "CMD")
 
+
 # cute tak on ping and pong
 @bot.command()
 async def pong(ctx):
     await ctx.send("They both go 'ping' when they're done.")
     eventlog("pong command called", "CMD")
 
+
 # toggles logging of messages
 @bot.command()
-async def log(ctx): 
+async def log(ctx, event=None, message=None): 
     if not ctx.author.guild_permissions.administrator:
         print(f"Unauthorized user {ctx.author.name} called log")
         eventlog(f"Unauthorized LOG event called by {ctx.author.name}", "ERR")
         return
     
     global MESSAGE_LOGGING
+    global EVENT_LOGGING
 
-    if MESSAGE_LOGGING:
-        MESSAGE_LOGGING = False
+    if event is None and message is None:
+        EVENT_LOGGING = not EVENT_LOGGING
+        MESSAGE_LOGGING = not MESSAGE_LOGGING
+
     else:
-        MESSAGE_LOGGING = True    
-    
+        if event == "0":
+            EVENT_LOGGING = False
+        elif event == "1":
+            EVENT_LOGGING = True
+        else:
+            pass
+        
+        if message == "0":
+            MESSAGE_LOGGING = False
+        elif message == "1":
+            MESSAGE_LOGGING = True
+        else:
+            pass
+
     if ctx.guild.name in BOT_TEXT_CHANNELS.keys():
         channel = discord.utils.get(ctx.guild.text_channels, id=BOT_TEXT_CHANNELS[ctx.guild.name])
-        if MESSAGE_LOGGING:
-            await channel.send("Began Logging")
-        else:
-            await channel.send("Stopped Logging")
-    else:
-        if MESSAGE_LOGGING:
-            await ctx.send("Began Logging")
-        else:
-            await ctx.send("Stopped Logging")
+        await channel.send(f"Event Logging: {EVENT_LOGGING}\nMessage Logging: {MESSAGE_LOGGING}")
     
     eventlog("Logging toggled", "CMD")
 
@@ -292,8 +290,8 @@ async def close(ctx):
     config['stats']['total_messages_sent'] = TOTAL_MESSAGES_SENT
     config['stats']['bot_mentions'] = BOT_MENTIONS
     config['stats']['last_shutdown_graceful'] = True
-    config['env']['logging'] = MESSAGE_LOGGING
-    config['env']['eventlog'] = True
+    config['env']['message_logging'] = MESSAGE_LOGGING
+    config['env']['event_logging'] = EVENT_LOGGING
 
     with open("config.json", 'w') as conf:
         json.dump(config, conf, separators=(",\n", ":"), indent="")

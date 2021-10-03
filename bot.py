@@ -67,7 +67,6 @@ async def on_ready():
     eventlog("on_ready called", "READY")
 
     for guild in bot.guilds:
-        for channel in guild.text_channels:
             os.makedirs(os.path.join(os.getcwd(), os.path.dirname(f"logs/messages/{guild.id}/")), exist_ok=True)
     
     # check and response for an abrupt previous shutdown

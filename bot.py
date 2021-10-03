@@ -47,7 +47,6 @@ print(f"Operator discord name: {OPERATOR}")
 
 for key in BOT_TEXT_CHANNELS.keys():
     print(f"\t{key} : {BOT_TEXT_CHANNELS[key]}")
-print(f"Bound Bot Guilds and Channels:")
 
 # checks for and creates logs/messages/ and logs/bot/ directory
 os.makedirs(os.path.join(os.getcwd(), os.path.dirname("logs/messages/")), exist_ok=True)
@@ -286,7 +285,8 @@ async def log(ctx, event=None, message=None):
 
 
 # creates a graceful shutdown of this bot
-# writes new config stats
+# writes new config stats of 'config' to
+# the file 'conf'
 @bot.command()
 async def close(ctx):
     if ctx.author.name != OPERATOR:

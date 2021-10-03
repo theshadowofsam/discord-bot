@@ -8,6 +8,7 @@ very early initial prototype
 I added way too many comments because this is just an internal
 project that I'm using to learn the discord.py api
 """
+import config
 import random
 import os
 import discord
@@ -21,32 +22,14 @@ from discord.ext import commands
 
 # parsing config and setting global variables
 # prints them all to console for confirmation
-with open("config.json") as jf:
-    config = json.load(jf)
+print(f"Total Messages recorded = {config.messages}\nBot mentions = {config.mentions}\nLast Shutdown Graceful = {config.graceful_end}")
+print(f"Bot token = {config.token}\nGuild = {config.main_guild}\nCommand prefix = {config.prefix}")
+print(f"Message logging = {config.message_logging}")
+print(f"Event logging = {config.event_logging}")
+print(f"Operator discord name: {config.operator}")
 
-TOTAL_MESSAGES_SENT = config["stats"]["total_messages_sent"]
-BOT_MENTIONS = config["stats"]["bot_mentions"]
-LAST_SHUTDOWN_GRACEFUL = config["stats"]["last_shutdown_graceful"]
-print(f"Total Messages recorded = {TOTAL_MESSAGES_SENT}\nBot mentions = {BOT_MENTIONS}\nLast Shutdown Graceful = {LAST_SHUTDOWN_GRACEFUL}")
-
-TOKEN = config["env"]["token"]
-GUILD = config["env"]["guild"]
-PREFIX = config["env"]["prefix"]
-print(f"Bot Token = {TOKEN}\nGuild = {GUILD}\nCommand Prefix = {PREFIX}")
-
-BOT_TEXT_CHANNELS = config["bot_text_channels"]
-
-MESSAGE_LOGGING = config["env"]["message_logging"]
-print(f"MESSAGE_LOGGING = {MESSAGE_LOGGING}")
-
-EVENT_LOGGING = config["env"]["event_logging"]
-print(f"EVENT_LOGGING = {EVENT_LOGGING}")
-
-OPERATOR = config["operator"]
-print(f"Operator discord name: {OPERATOR}")
-
-for key in BOT_TEXT_CHANNELS.keys():
-    print(f"\t{key} : {BOT_TEXT_CHANNELS[key]}")
+for key in config.bound_text_channels.keys():
+    print(f"\t{key} : {config.bound_text_channels[key]}")
 
 # checks for and creates logs/messages/ and logs/bot/ directory
 os.makedirs(os.path.join(os.getcwd(), os.path.dirname("logs/messages/")), exist_ok=True)
@@ -57,7 +40,7 @@ intents = discord.Intents.default()
 intents.members = True
 
 # creates the discord bot object
-bot = commands.Bot(command_prefix = PREFIX, intents = intents)
+bot = commands.Bot(command_prefix = config.prefix, intents = intents)
 
 
 # on_ready() is called when the bot connects and is readied
@@ -69,35 +52,17 @@ async def on_ready():
             os.makedirs(os.path.join(os.getcwd(), os.path.dirname(f"logs/messages/{guild.id}/")), exist_ok=True)
     
     # check and response for an abrupt previous shutdown
-    global LAST_SHUTDOWN_GRACEFUL
-    if not LAST_SHUTDOWN_GRACEFUL:
+
+    if not config.graceful_end:
         print("The previous shutdown was NOT graceful!\nSome data has been lost!")
-    config["stats"]["last_shutdown_graceful"] = False
-    with open("config.json", 'w') as conf:
-        json.dump(config, conf, separators=(",\n", ":"), indent="")
-    LAST_SHUTDOWN_GRACEFUL = False
-    
-    # sets main_guild to be the guild of name GUILD in the config
-    # if one is present
-    global main_guild
-    global main_guild_exists
-    try:
-        main_guild = discord.utils.find(lambda g: g.name == GUILD, bot.guilds)
-        main_guild_exists = True
-    except Exception() as e:
-        print(f"A GUILD error occurred: {e}")
-        main_guild_exists = False
+    config.graceful_end = False
+    config.writeout()
 
     # setting some more global variables
-    global main_guild_text_channel
     global emojis
     emojis = {}
     global emoji_list
     emoji_list = []    
-    if main_guild_exists:
-        main_guild_text_channel = main_guild.get_channel(BOT_TEXT_CHANNELS[GUILD])
-        print(main_guild)
-        print(main_guild_text_channel)
 
     # keywords that on_message() uses
     global words_list
@@ -117,10 +82,15 @@ async def on_ready():
             emoji_list.append(emojis[emoji.name])
 
     # cute header with guild and self info
+    global operator_channel
+    operator_channel = None
+
     print("*"*35 + "\n")
     print(f"\n{bot.user} has successfully connected to Discord and is readied!")
-    if main_guild_exists:
-        print(f"{bot.user} has access to Main Guild: \n\t{main_guild.name}(id: {main_guild.id})\n")
+    if config.main_guild != "None" and config.main_guild in config.bound_text_channels.keys():
+        temp_guild = discord.utils.find(lambda g: g.name == config.main_guild, bot.guilds)    
+        operator_channel = temp_guild.get_channel(config.bound_text_channels[config.main_guild])
+        await operator_channel.send("Connected Successfully!")
     print("*"*35 + "\n")    
 
     # prints a list of guilds and members attached to their nicknames
@@ -133,10 +103,6 @@ async def on_ready():
             else:
                 print(f"\t - '{member.name}'")   
     
-    #prints a message in discord when the bot comes online
-    if main_guild_exists:
-        await main_guild_text_channel.send("Successfuly Joined")
-    
     eventlog("on_ready finish", "READY")
 
 
@@ -147,8 +113,8 @@ async def on_message(message):
     if message.author == bot.user:
         return
     
-    # logs messages in the realtive servers message log
-    if MESSAGE_LOGGING:
+    # logs messages in the relative servers message log
+    if config.message_logging:
         logdir = f"logs/messages/{message.guild.id}/{message.channel.name}.txt"
         mentions = ""
         if len(message.mentions) != 0:
@@ -165,15 +131,13 @@ async def on_message(message):
 
     # records bot mentions
     if f"<@{bot.user.id}>" in message.content or f"<@!{bot.user.id}>" in message.content:
-        global BOT_MENTIONS
-        BOT_MENTIONS += 1
+        config.mentions += 1
         print("Bot was mentioned")
         await message.channel.send(f"{message.author.mention} no you.")
 
     #increment stat
-    global TOTAL_MESSAGES_SENT
-    TOTAL_MESSAGES_SENT += 1
-    print(f"New message sent: total = {TOTAL_MESSAGES_SENT}")
+    config.messages += 1
+    print(f"New message sent: total = {config.messages}")
 
     # checks for keywords and replies
     for word in words_list:
@@ -212,8 +176,7 @@ async def set_default_channel(ctx):
         print("Unauthorized user called set_default_channel")
         eventlog(f"Unauthorized set_default_channel called by {ctx.author.name}", "ERR")
         return
-    global BOT_TEXT_CHANNELS
-    BOT_TEXT_CHANNELS[f"{ctx.guild}"] = ctx.message.channel.id
+    config.bound_text_channels[f"{ctx.guild}"] = ctx.message.channel.id
     print(f"{ctx.guild} = {ctx.message.channel.id}")
     await ctx.send(f"This channel was bound as {ctx.guild}'s Jester_ channel!")
 
@@ -254,65 +217,56 @@ async def log(ctx, event=None, message=None):
         print(f"Unauthorized user {ctx.author.name} called log")
         eventlog(f"Unauthorized LOG event called by {ctx.author.name}", "ERR")
         return
-    
-    global MESSAGE_LOGGING
-    global EVENT_LOGGING
 
     if event is None and message is None:
-        EVENT_LOGGING = not EVENT_LOGGING
-        MESSAGE_LOGGING = not MESSAGE_LOGGING
+        config.event_logging = not config.event_logging
+        config.message_logging = not config.message_logging
 
     else:
         if event.lower() in ["0", "no", "false"]:
-            EVENT_LOGGING = False
+            config.event_logging = False
         elif event.lower() in ["1", "yes", "true"]:
-            EVENT_LOGGING = True
+            config.event_logging = True
         else:
             pass
 
         if message.lower() in ["0", "no", "false"]:
-            MESSAGE_LOGGING = False
+            config.message_logging = False
         elif message.lower() in ["1", "yes", "true"]:
-            MESSAGE_LOGGING = True
+            config.message_logging = True
         else:
             pass
 
-    if ctx.guild.name in BOT_TEXT_CHANNELS.keys():
-        channel = discord.utils.get(ctx.guild.text_channels, id=BOT_TEXT_CHANNELS[ctx.guild.name])
-        await channel.send(f"Event Logging: {EVENT_LOGGING}\nMessage Logging: {MESSAGE_LOGGING}")
+    if ctx.guild.name in config.bound_text_channels.keys():
+        channel = discord.utils.get(ctx.guild.text_channels, id=config.bound_text_channels[ctx.guild.name])
+        await channel.send(f"Event Logging: {config.event_logging}\nMessage Logging: {config.message_logging}")
     
     eventlog("Logging toggled", "CMD")
 
 
 # creates a graceful shutdown of this bot
-# writes new config stats of 'config' to
-# the file 'conf'
+# runs the writeout method in config.py
 @bot.command()
 async def close(ctx):
-    if ctx.author.name != OPERATOR:
+    if ctx.author.name != config.operator:
         print(f"someone unauthorized tried to close the bot: {ctx.author.name}")
         eventlog(f"Unauthorized CLOSE Event Called by {ctx.author.name}", "ERR")
         return
+
     await ctx.send("Starting Graceful Shutdown...")
 
-    config['stats']['total_messages_sent'] = TOTAL_MESSAGES_SENT
-    config['stats']['bot_mentions'] = BOT_MENTIONS
-    config['stats']['last_shutdown_graceful'] = True
-    config['env']['message_logging'] = MESSAGE_LOGGING
-    config['env']['event_logging'] = EVENT_LOGGING
-
-    with open("config.json", 'w') as conf:
-        json.dump(config, conf, separators=(",\n", ":"), indent="")
-
+    config.graceful_end = True
+    config.writeout()
+    
     await ctx.send("Done!")
     
     eventlog("Close Event", "CLOSE")
-   
+    
     await bot.close()
 
 
 def eventlog(message, stream):
-    if not EVENT_LOGGING:
+    if not config.event_logging:
         return
     
     date = datetime.datetime
@@ -325,6 +279,6 @@ def eventlog(message, stream):
 
 # runs the bot object and connects
 # prints a shutdown message and a separator
-bot.run(TOKEN)
+bot.run(config.token)
 print("SHUTDOWN COMPLETE")
 print("*"*35 + "\n\n\n")

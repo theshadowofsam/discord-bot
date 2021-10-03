@@ -1,28 +1,18 @@
 {
-    "stats":{
-    "total_messages_sent":11,
-    
-    "bot_mentions":0,
-    
-    "last_shutdown_graceful":true
-    },
-    
-    "env":{
-    "token":"your bot token",
-    
-    "guild":"your main guild name",
-    
-    "prefix":"!",
-
-    "message_logging":false,
-
-    "event_logging":false
-    },
-    
-    "bot_text_channels":{
-    "Example Guild Name":"Example Guild ID (remove the quotes it do be an integer)",
-    "Example Guild 2 Name":"Example Guild 2 ID (remove the quotes its an integer)"
-    },
-    
-    "operator":"operatordiscordname"
-    }
+	"stats": {
+		"messages": 0,
+		"bot_mentions": 0,
+		"last_shutdown_graceful": true
+	},
+	"env": {
+		"token": "Your bot token here!",
+		"guild": "Your main discord server name here!",
+		"prefix": "!",
+		"message_logging": false,
+		"event_logging": false
+	},
+	"bot_text_channels": {
+		"Discord Server Name Here": 1234567890
+	},
+	"operator": "Your discord name here!"
+}

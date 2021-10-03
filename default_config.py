@@ -1,5 +1,5 @@
 """
-config.py
+default_config.py
 Samuel Lee
 10/03/2021
 
@@ -9,7 +9,7 @@ config module for bot.py
 import json
 
 # reads from config.json
-with open("config.json") as read_conf:
+with open("default_config.json") as read_conf:
     config_file = json.load(read_conf)
 
 messages = config_file["stats"]["messages"]

@@ -1,4 +1,5 @@
 # untracked files
 config.json
+config.py
 __pycache__
 logs

@@ -142,6 +142,7 @@ async def on_message(message):
         if message.content.find(word) != -1:
             await message.channel.send(rand_emoji)
             break
+        
     await bot.process_commands(message)
 
 
@@ -152,45 +153,19 @@ async def on_message_delete(message):
         return
     
     if message.guild.name in config.bound_text_channels.keys():
-        
         timestamp = datetime.datetime
-        
         record = ""
         record += f"Author Name: {message.author.name}\nAuthor ID: {message.author.id}\n"
         record += f"Channel Name: {message.channel.name}\nChannel ID: {message.channel.id}\n"
         record += f"Time Created: {str(message.created_at)}\nDeleted at: {str(timestamp.now())}\n"
-
         if len(message.attachments) > 0:
             record += "Attachments:\n"
             for attach in message.attachments:
                 record += "\t" + str(attach) + "\n"
-
         record += "Content:\n"
         record += "\t" + message.content
 
         await message.guild.get_channel(config.bound_text_channels[message.guild.name]).send(record)
-
-
-# Deprecated
-# message delete event with response
-# @bot.event
-# async def on_raw_message_delete(payload):
-#     if payload.cached_message is None:
-#         return
-    
-#     guild_id = payload.guild_id
-#     channel_id = payload.channel_id
-#     guild = bot.get_guild(guild_id)
-   
-#     for channel in guild.text_channels:
-#         if channel.id == channel_id:
-#             if payload.cached_message.author.bot:
-#                 return
-            
-#             author = payload.cached_message.author
-            
-#             await channel.send(f'{author.mention} was naughty and deleted the following message:\n"{payload.cached_message.content}"')
-#             break
 
 
 # sets a main channel for the guild and channel this command was called in

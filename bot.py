@@ -20,8 +20,7 @@ import datetime
 from discord.ext import commands
 
 
-# parsing config and setting global variables
-# prints them all to console for confirmation
+# prints config info
 print(f"Total Messages recorded = {config.messages}\nBot mentions = {config.mentions}\nLast Shutdown Graceful = {config.graceful_end}")
 print(f"Bot token = {config.token}\nGuild = {config.main_guild}\nCommand prefix = {config.prefix}")
 print(f"Message logging = {config.message_logging}")
@@ -52,7 +51,6 @@ async def on_ready():
             os.makedirs(os.path.join(os.getcwd(), os.path.dirname(f"logs/messages/{guild.id}/")), exist_ok=True)
     
     # check and response for an abrupt previous shutdown
-
     if not config.graceful_end:
         print("The previous shutdown was NOT graceful!\nSome data has been lost!")
     config.graceful_end = False
@@ -147,25 +145,52 @@ async def on_message(message):
     await bot.process_commands(message)
 
 
-# message delete event with response
+# records deletion of known messages
 @bot.event
-async def on_raw_message_delete(payload):
-    if payload.cached_message is None:
+async def on_message_delete(message):
+    if message.author == bot.user:
         return
     
-    guild_id = payload.guild_id
-    channel_id = payload.channel_id
-    guild = bot.get_guild(guild_id)
+    if message.guild.name in config.bound_text_channels.keys():
+        
+        timestamp = datetime.datetime
+        
+        record = ""
+        record += f"Author Name: {message.author.name}\nAuthor ID: {message.author.id}\n"
+        record += f"Channel Name: {message.channel.name}\nChannel ID: {message.channel.id}\n"
+        record += f"Time Created: {str(message.created_at)}\nDeleted at: {str(timestamp.now())}\n"
+
+        if len(message.attachments) > 0:
+            record += "Attachments:\n"
+            for attach in message.attachments:
+                record += "\t" + str(attach) + "\n"
+
+        record += "Content:\n"
+        record += "\t" + message.content
+
+        await message.guild.get_channel(config.bound_text_channels[message.guild.name]).send(record)
+
+
+# Deprecated
+# message delete event with response
+# @bot.event
+# async def on_raw_message_delete(payload):
+#     if payload.cached_message is None:
+#         return
+    
+#     guild_id = payload.guild_id
+#     channel_id = payload.channel_id
+#     guild = bot.get_guild(guild_id)
    
-    for channel in guild.text_channels:
-        if channel.id == channel_id:
-            if payload.cached_message.author.bot:
-                return
+#     for channel in guild.text_channels:
+#         if channel.id == channel_id:
+#             if payload.cached_message.author.bot:
+#                 return
             
-            author = payload.cached_message.author
+#             author = payload.cached_message.author
             
-            await channel.send(f'{author.mention} was naughty and deleted the following message:\n"{payload.cached_message.content}"')
-            break
+#             await channel.send(f'{author.mention} was naughty and deleted the following message:\n"{payload.cached_message.content}"')
+#             break
 
 
 # sets a main channel for the guild and channel this command was called in

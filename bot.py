@@ -19,77 +19,28 @@ import datetime
 
 from discord.ext import commands
 
-
-# prints config info                                                                                                                                                            MOVE THIS CRAP INTO A STARTUP METHOD FOR on_ready
-print(f"Total Messages recorded = {config.messages}\nBot mentions = {config.mentions}\nLast Shutdown Graceful = {config.graceful_end}")
-print(f"Bot token = {config.token}\nGuild = {config.main_guild}\nCommand prefix = {config.prefix}")
-print(f"Message logging = {config.message_logging}")
-print(f"Event logging = {config.event_logging}")
-print(f"Operator discord name: {config.operator}")
-
-for key in config.bound_text_channels.keys():
-    print(f"\t{key} : {config.bound_text_channels[key]}")
-
 # checks for and creates logs/messages/ and logs/bot/ directory
 os.makedirs(os.path.join(os.getcwd(), os.path.dirname("logs/messages/")), exist_ok=True)
 os.makedirs(os.path.join(os.getcwd(), os.path.dirname("logs/bot/")), exist_ok=True)
 
-# creating intents for the bot 
+#sets up bot
 intents = discord.Intents.default()
 intents.members = True
-
-# creates the discord bot object
 bot = commands.Bot(command_prefix = config.prefix, intents = intents)
 
 
 # on_ready() is called when the bot connects and is readied
 @bot.event
 async def on_ready():
-    #                                                                                                                                                                           MAKE ON READY RUN THIS CRAP ONLY ONCE
-    #                                                                                                                                                                           MOVE IT ALL TO A STARTUP AND REFRESH MTHD
-    eventlog("on_ready called", "READY")
-
-    for guild in bot.guilds:
-            os.makedirs(os.path.join(os.getcwd(), os.path.dirname(f"logs/messages/{guild.id}/")), exist_ok=True)
-    
-    # check and response for an abrupt previous shutdown
-    if not config.graceful_end:
-        print("The previous shutdown was NOT graceful!\nSome data has been lost!")
-    config.graceful_end = False
-    config.writeout()
-    
-    # creates easy to use emojis for the bot
-    for emoji in bot.emojis:
-        if emoji.animated:
-            config.emojis[emoji.name] = f"<a:{emoji.name}:{emoji.id}>"
-        else:
-            config.emojis[emoji.name] = f"<:{emoji.name}:{emoji.id}>"
-        config.emoji_list.append(config.emojis[emoji.name])
-
-    # cute header with guild and self info
-    global operator_channel
-    operator_channel = None
-
-    print("*"*35 + "\n")
-    print(f"\n{bot.user} has successfully connected to Discord and is readied!")
-    if config.main_guild != "None" and config.main_guild in config.bound_text_channels.keys():
-        temp_guild = discord.utils.find(lambda g: g.name == config.main_guild, bot.guilds)    
-        operator_channel = temp_guild.get_channel(config.bound_text_channels[config.main_guild])
-        await operator_channel.send("Connected Successfully!")
-    print("*"*35 + "\n")    
-
-    # prints a list of guilds and members attached to their nicknames
-    print("Guilds: ")
-    for guild in bot.guilds:
-        print(f"{guild.name} - Members:")
-        for member in guild.members:
-            if member.nick != None:
-                print(f"\t - '{member.name}' has the nickname '{member.nick}'")
-            else:
-                print(f"\t - '{member.name}'")   
-    
-    config.on_ready_ran = True
-    eventlog("on_ready finish", "READY")
+    if not config.on_ready_ran:
+        eventlog("on_ready called", "READY")
+        startup()
+        await config.operator_channel.send("Connected Successfully!")
+        config.on_ready_ran = True
+        eventlog("on_ready finish", "READY")
+    else:
+        print("Bot Reconnected")
+        eventlog("Bot Reconnected", "READY")
 
 
 # a function to parse messages
@@ -207,6 +158,12 @@ async def jester_purge(ctx):
     await ctx.channel.purge(limit = 500)
 
 
+# refreshes emojis
+@bot.command()
+async def refresh(ctx):
+    refresh()
+
+
 # toggles logging of messages
 @bot.command()
 async def log(ctx, event=None, message=None): 
@@ -265,7 +222,54 @@ async def close(ctx):
 # prints some bot related info pulled from config
 # does some other things I had in on_ready()
 def startup():
-    pass
+    print(f"Total Messages recorded = {config.messages}\nBot mentions = {config.mentions}\nLast Shutdown Graceful = {config.graceful_end}")
+    print(f"Bot token = {config.token}\nGuild = {config.main_guild}\nCommand prefix = {config.prefix}")
+    print(f"Message logging = {config.message_logging}")
+    print(f"Event logging = {config.event_logging}")
+    print(f"Operator discord name: {config.operator}")
+
+    for key in config.bound_text_channels.keys():
+        print(f"\t{key} : {config.bound_text_channels[key]}")
+
+    for guild in bot.guilds:
+            os.makedirs(os.path.join(os.getcwd(), os.path.dirname(f"logs/messages/{guild.id}/")), exist_ok=True)
+    
+    # check and response for an abrupt previous shutdown
+    if not config.graceful_end:
+        print("The previous shutdown was NOT graceful!\nSome data has been lost!")
+    config.graceful_end = False
+    config.writeout()
+    
+    # creates emojis
+    refresh()
+
+    # cute header with guild and self info
+    print("*"*35 + "\n")
+    print(f"\n{bot.user} has successfully connected to Discord and is readied!")
+    if config.main_guild != "None" and config.main_guild in config.bound_text_channels.keys():
+        temp_guild = discord.utils.find(lambda g: g.name == config.main_guild, bot.guilds)    
+        config.operator_channel = temp_guild.get_channel(config.bound_text_channels[config.main_guild])
+    print("*"*35 + "\n")   
+
+    # prints a list of guilds and members attached to their nicknames
+    print("Guilds: ")
+    for guild in bot.guilds:
+        print(f"{guild.name} - Members:")
+        for member in guild.members:
+            if member.nick != None:
+                print(f"\t - '{member.name}' has the nickname '{member.nick}'")
+            else:
+                print(f"\t - '{member.name}'") 
+
+# creates easy to use emojis for the bot
+def refresh():
+    for emoji in bot.emojis:
+        if emoji.animated:
+            config.emojis[emoji.name] = f"<a:{emoji.name}:{emoji.id}>"
+        else:
+            config.emojis[emoji.name] = f"<:{emoji.name}:{emoji.id}>"
+        config.emoji_list.append(config.emojis[emoji.name])
+
 
 
 # used by other functions to log what happens when

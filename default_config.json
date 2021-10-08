@@ -14,5 +14,6 @@
 	"bot_text_channels": {
 		"Discord Server Name Here": 1234567890
 	},
+	"words_list":["Example1", "Example2", "Additional words or phrases to be caught by the bot can be added to this list."],
 	"operator": "Your discord name here!"
 }

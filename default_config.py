@@ -25,8 +25,12 @@ message_logging = config_file["env"]["message_logging"]
 event_logging = config_file["env"]["event_logging"]
 operator = config_file["operator"]
 
+
 emojis = {}
 emoji_list = []
+on_ready_ran = False
+words_list = config_file["words_list"]  # words the bot catches in on_message() doesnt do anything important right now
+
 
 # writes to config.json
 def writeout():

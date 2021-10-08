@@ -20,7 +20,7 @@ import datetime
 from discord.ext import commands
 
 
-# prints config info
+# prints config info                                                                                                                                                            MOVE THIS CRAP INTO A STARTUP METHOD FOR on_ready
 print(f"Total Messages recorded = {config.messages}\nBot mentions = {config.mentions}\nLast Shutdown Graceful = {config.graceful_end}")
 print(f"Bot token = {config.token}\nGuild = {config.main_guild}\nCommand prefix = {config.prefix}")
 print(f"Message logging = {config.message_logging}")
@@ -45,6 +45,8 @@ bot = commands.Bot(command_prefix = config.prefix, intents = intents)
 # on_ready() is called when the bot connects and is readied
 @bot.event
 async def on_ready():
+    #                                                                                                                                                                           MAKE ON READY RUN THIS CRAP ONLY ONCE
+    #                                                                                                                                                                           MOVE IT ALL TO A STARTUP AND REFRESH MTHD
     eventlog("on_ready called", "READY")
 
     for guild in bot.guilds:
@@ -56,6 +58,7 @@ async def on_ready():
     config.graceful_end = False
     config.writeout()
 
+    #                                                                                                                                                                           MOVE THESE TO CONFIG
     # setting some more global variables
     global emojis
     emojis = {}
@@ -275,10 +278,11 @@ def eventlog(message, stream):
     
     with open(os.path.join(os.getcwd(), logdir), mode="a") as log:
         log.write(f"{timestamp} {stream}:\t{message}\n")
-        
+
 
 # runs the bot object and connects
 # prints a shutdown message and a separator
-bot.run(config.token)
-print("SHUTDOWN COMPLETE")
-print("*"*35 + "\n\n\n")
+if __name__ == "__main__":
+    bot.run(config.token)
+    print("SHUTDOWN COMPLETE")
+    print("*"*35 + "\n\n\n")

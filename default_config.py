@@ -25,6 +25,9 @@ message_logging = config_file["env"]["message_logging"]
 event_logging = config_file["env"]["event_logging"]
 operator = config_file["operator"]
 
+emojis = {}
+emoji_list = []
+
 # writes to config.json
 def writeout():
     config_file["stats"]["messages"] = messages

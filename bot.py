@@ -58,13 +58,6 @@ async def on_ready():
     config.graceful_end = False
     config.writeout()
 
-    #                                                                                                                                                                           MOVE THESE TO CONFIG
-    # setting some more global variables
-    global emojis
-    emojis = {}
-    global emoji_list
-    emoji_list = []    
-
     # keywords that on_message() uses
     global words_list
     words_list = [
@@ -74,13 +67,12 @@ async def on_ready():
     ]
 
     # creates easy to use emojis for the bot
-    for guild in bot.guilds:
-        for emoji in guild.emojis:
-            if emoji.animated:
-                emojis[emoji.name] = f"<a:{emoji.name}:{emoji.id}>"
-            else:
-                emojis[emoji.name] = f"<:{emoji.name}:{emoji.id}>"
-            emoji_list.append(emojis[emoji.name])
+    for emoji in bot.emojis:
+        if emoji.animated:
+            config.emojis[emoji.name] = f"<a:{emoji.name}:{emoji.id}>"
+        else:
+            config.emojis[emoji.name] = f"<:{emoji.name}:{emoji.id}>"
+        config.emoji_list.append(config.emojis[emoji.name])
 
     # cute header with guild and self info
     global operator_channel
@@ -128,7 +120,7 @@ async def on_message(message):
             log.write(lines)
 
     # random emoji used in some replies
-    rand_emoji = random.choice(emoji_list)
+    rand_emoji = random.choice(config.emoji_list)
 
     # records bot mentions
     if f"<@{bot.user.id}>" in message.content or f"<@!{bot.user.id}>" in message.content:
@@ -188,7 +180,7 @@ async def set_default_channel(ctx):
 @bot.command()
 async def play(ctx):
     print("!play called")
-    rand_emoji = random.choice(emoji_list)
+    rand_emoji = random.choice(config.emoji_list)
     await ctx.send(f"<@235088799074484224> is a {rand_emoji}")
     eventlog("play command called", "CMD")
 
@@ -211,6 +203,15 @@ async def ping(ctx):
 async def pong(ctx):
     await ctx.send("They both go 'ping' when they're done.")
     eventlog("pong command called", "CMD")
+
+
+# clear a text channel of 500 newest messages
+@bot.command()
+async def jester_purge(ctx):
+    if ctx.author.name != config.operator:
+        ctx.send("Invalid user")
+        return
+    await ctx.channel.purge(limit = 500)
 
 
 # toggles logging of messages
@@ -268,6 +269,8 @@ async def close(ctx):
     await bot.close()
 
 
+# used by other functions to log what happens when
+# not really useful for anyone but me
 def eventlog(message, stream):
     if not config.event_logging:
         return

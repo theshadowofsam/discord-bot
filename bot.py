@@ -57,15 +57,7 @@ async def on_ready():
         print("The previous shutdown was NOT graceful!\nSome data has been lost!")
     config.graceful_end = False
     config.writeout()
-
-    # keywords that on_message() uses
-    global words_list
-    words_list = [
-        "bot",
-        "nerd",
-        "machine",
-    ]
-
+    
     # creates easy to use emojis for the bot
     for emoji in bot.emojis:
         if emoji.animated:
@@ -96,6 +88,7 @@ async def on_ready():
             else:
                 print(f"\t - '{member.name}'")   
     
+    config.on_ready_ran = True
     eventlog("on_ready finish", "READY")
 
 
@@ -133,7 +126,7 @@ async def on_message(message):
     print(f"New message sent: total = {config.messages}")
 
     # checks for keywords and replies
-    for word in words_list:
+    for word in config.words_list:
         if message.content.find(word) != -1:
             await message.channel.send(rand_emoji)
             break
@@ -267,6 +260,12 @@ async def close(ctx):
     eventlog("Close Event", "CLOSE")
     
     await bot.close()
+
+
+# prints some bot related info pulled from config
+# does some other things I had in on_ready()
+def startup():
+    pass
 
 
 # used by other functions to log what happens when

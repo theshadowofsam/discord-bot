@@ -63,9 +63,6 @@ async def on_message(message):
             lines = f"\nMessage ID: {message.id}\nAuthor: {message.author}\nTime: {message.created_at}\nMentions: {mentions}\nContents:\n" + "-"*35 + f"\n{message.content}\n" + "-"*35 + "\n"
             log.write(lines)
 
-    # random emoji used in some replies
-    rand_emoji = random.choice(config.emoji_list)
-
     # records bot mentions
     if f"<@{bot.user.id}>" in message.content or f"<@!{bot.user.id}>" in message.content:
         config.mentions += 1
@@ -79,6 +76,7 @@ async def on_message(message):
     # checks for keywords and replies
     for word in config.words_list:
         if message.content.find(word) != -1:
+            rand_emoji = random.choice(config.emoji_list)
             await message.channel.send(rand_emoji)
             break
         
@@ -269,7 +267,6 @@ def refresh():
         else:
             config.emojis[emoji.name] = f"<:{emoji.name}:{emoji.id}>"
         config.emoji_list.append(config.emojis[emoji.name])
-
 
 
 # used by other functions to log what happens when

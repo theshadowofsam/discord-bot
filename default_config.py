@@ -4,7 +4,6 @@ Samuel Lee
 10/03/2021
 
 config module for bot.py
-
 """
 import json
 

@@ -8,26 +8,27 @@ very early initial prototype
 I added way too many comments because this is just an internal
 project that I'm using to learn the discord.py api
 """
+import discord
+from discord.ext import commands
+
 import config
+
+import json
 import random
 import os
-import discord
 import re
-import json
 import sys
 import datetime
-
-from discord.ext import commands
 
 # checks for and creates logs/messages/ and logs/bot/ directory
 os.makedirs(os.path.join(os.getcwd(), os.path.dirname("logs/messages/")), exist_ok=True)
 os.makedirs(os.path.join(os.getcwd(), os.path.dirname("logs/bot/")), exist_ok=True)
 
-#sets up bot
+# sets up bot
 intents = discord.Intents.default()
 intents.members = True
 bot = commands.Bot(command_prefix = config.prefix, intents = intents)
-
+bot.load_extension('bot_commands')
 
 # on_ready() is called when the bot connects and is readied
 @bot.event
@@ -80,8 +81,10 @@ async def on_message(message):
             await message.channel.send(rand_emoji)
             break
         
-    await bot.process_commands(message)
-
+    try:
+        await bot.process_commands(message)
+    except Exception() as e:
+        print(f"ERR:\n{e}")
 
 # records deletion of known messages
 @bot.event

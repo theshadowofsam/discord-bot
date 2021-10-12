@@ -29,6 +29,7 @@ intents = discord.Intents.default()
 intents.members = True
 bot = commands.Bot(command_prefix = config.prefix, intents = intents)
 bot.load_extension('bot_commands')
+bot.load_extension('Music')
 
 # on_ready() is called when the bot connects and is readied
 @bot.event
@@ -86,6 +87,7 @@ async def on_message(message):
     except Exception() as e:
         print(f"ERR:\n{e}")
 
+
 # records deletion of known messages
 @bot.event
 async def on_message_delete(message):
@@ -117,6 +119,9 @@ async def close(ctx):
         eventlog(f"Unauthorized CLOSE Event Called by {ctx.author.name}", "ERR")
         return
 
+    for voice in bot.voice_clients:
+        await voice.disconnect()
+
     await ctx.send("Starting Graceful Shutdown...")
 
     config.graceful_end = True
@@ -137,6 +142,7 @@ def startup():
     print(f"Message logging = {config.message_logging}")
     print(f"Event logging = {config.event_logging}")
     print(f"Operator discord name: {config.operator}")
+
 
     for key in config.bound_text_channels.keys():
         print(f"\t{key} : {config.bound_text_channels[key]}")

@@ -11,10 +11,10 @@ import asyncio
 from async_timeout import timeout
 from yt_search import search as ytsearch
 
-
+#FFmpeg options i found online
 FFMPEG_OPTS = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 'options': '-vn'}
 
-
+# Music player with loop that runs queue
 class MusicPlayer:
     def __init__(self, ctx):
         self.bot = ctx.bot
@@ -52,7 +52,7 @@ class MusicPlayer:
     def destroy(self, guild):
         return self.bot.loop.create_task(self.cog.cleanup(guild))
             
-
+# used for audio sources and info
 class Source:
     def __init__(self, ctx, data, url):
         self.name = data['title']
@@ -61,7 +61,7 @@ class Source:
         self.requested = ctx.author.name
         self.full_data = data
 
-
+# Music Cog
 class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -85,7 +85,7 @@ class Music(commands.Cog):
         await player.queue.put(source)
         print(player.queue)
 
-
+    # skips currently playing song in ctx.guild also uses vote system if not admin
     @commands.command()
     async def skip(self, ctx):
         if not ctx.author.voice:
@@ -105,18 +105,27 @@ class Music(commands.Cog):
             vc.stop()        
         else:
             print(f"{len(ctx.author.voice.channel.members)-1} voice channel members")
-            print(len((ctx.author.voice.channel.members)-1)/2)
+            print((len(ctx.author.voice.channel.members)-1)/2)
             await ctx.send(f"Not enough votes to skip: {len(player.skips)}/{len(ctx.author.voice.channel.members)/2}")
 
 
     # disconnects from voice
     @commands.command()
     async def dc(self, ctx):
-        guild = ctx.guild.id
-        if guild in self.mp:
-            await self.mp[guild].disconnect()
+        await self.cleanup(ctx.guild)
 
 
+    # clear the ctx.channel players queue
+    @commands.command()
+    async def clear(self, ctx):
+        player = self.get_player(ctx)
+
+        player.queue = asyncio.Queue()
+
+        await ctx.send("Queue emptied")
+
+
+    # used to join a voice client to ctx.author.voice.channel
     async def join(self, ctx, voice):
         channel = ctx.author.voice.channel
 
@@ -128,6 +137,7 @@ class Music(commands.Cog):
             return voice
 
     
+    # disconnects a voice client and deletes the guilds player
     async def cleanup(self, guild):
         try:
             await guild.voice_client.disconnect()
@@ -140,6 +150,7 @@ class Music(commands.Cog):
             pass
 
 
+    # returns ctx.guild's player or creates it if none exists
     def get_player(self, ctx):
         try:
             player = self.mp[ctx.guild.id]

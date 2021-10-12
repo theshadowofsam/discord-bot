@@ -1,3 +1,9 @@
+"""
+bot_commands.py
+Samuel Lee
+10/9/2021
+"""
+import discord
 from discord.ext import commands
 import config
 import Jester
@@ -19,22 +25,7 @@ async def set_default_channel(ctx):
     config.bound_text_channels[f"{ctx.guild}"] = ctx.message.channel.id
     print(f"{ctx.guild} = {ctx.message.channel.id}")
     await ctx.send(f"This channel was bound as {ctx.guild}'s Jester_ channel!")
-
-
-# makes fun of rythm bot
-@commands.command()
-async def play(ctx):
-    print("!play called")
-    rand_emoji = random.choice(config.emoji_list)
-    await ctx.send(f"<@235088799074484224> is a {rand_emoji}")
-    Jester.eventlog("play command called", "CMD")
-
-
-# alias for play()
-@commands.command()
-async def p(ctx):
-    await play(ctx)
-
+    
 
 # cute take on ping and pong
 @commands.command()
@@ -62,7 +53,7 @@ async def jester_purge(ctx):
 # refreshes emojis
 @commands.command()
 async def refresh(ctx):
-    refresh()
+    Jester.refresh()
 
 
 # toggles logging of messages
@@ -99,12 +90,9 @@ async def log(ctx, event=None, message=None):
     Jester.eventlog("Logging toggled", "CMD")
 
 
-
 def setup(bot):
     bot.add_command(import_test)
     bot.add_command(set_default_channel)
-    bot.add_command(play)
-    bot.add_command(p)
     bot.add_command(ping)
     bot.add_command(pong)
     bot.add_command(jester_purge)

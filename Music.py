@@ -41,7 +41,7 @@ class MusicPlayer:
             
             self.current = source
             self.guild.voice_client.play(discord.FFmpegPCMAudio(source.source, options=FFMPEG_OPTS), after=lambda _: self.bot.loop.call_soon_threadsafe(self.go.set))
-            await self.channel.send(f"Now Playing")
+            await self.channel.send(f"Now Playing: \n{source.url}")
 
             await self.go.wait()
 

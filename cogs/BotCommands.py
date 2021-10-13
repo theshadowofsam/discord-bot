@@ -90,5 +90,5 @@ class BotCommands(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(BotCommands)
+    bot.add_cog(BotCommands(bot))
     

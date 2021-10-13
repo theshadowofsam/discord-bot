@@ -28,8 +28,8 @@ os.makedirs(os.path.join(os.getcwd(), os.path.dirname("logs/bot/")), exist_ok=Tr
 intents = discord.Intents.default()
 intents.members = True
 bot = commands.Bot(command_prefix = config.prefix, intents = intents)
-bot.load_extension('bot_commands')
-bot.load_extension('Music')
+bot.load_extension('cogs.BotCommands')
+bot.load_extension('cogs.Music')
 
 # on_ready() is called when the bot connects and is readied
 @bot.event
@@ -176,6 +176,7 @@ def startup():
                 print(f"\t - '{member.name}' has the nickname '{member.nick}'")
             else:
                 print(f"\t - '{member.name}'") 
+
 
 # creates easy to use emojis for the bot
 def refresh():

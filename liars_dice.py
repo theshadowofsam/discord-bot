@@ -10,10 +10,10 @@ implements my simple dice rolling script
 import random
 
 class Game:
-    def __init__(self, mentions, game_number, dice_amount=5):
+    def __init__(self, mentions, game_id, dice_amount=5):
         self.players = mentions
         self.count = dice_amount
-        self.game_number = game_number
+        self.game_id = game_id
         self.sides = 6
         self.player_dice = {}
         self.dice = {

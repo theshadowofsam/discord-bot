@@ -39,6 +39,24 @@ class BotCommands(commands.Cog):
         Jester.eventlog("ping command called", "CMD")
 
 
+    # users and respective replies to 
+    @commands.command()
+    async def add_custom_reply(self, ctx, name, *, phrase):
+        if name in config.reply_users.keys():
+            config.reply_users.append(phrase)
+        else:
+            config.reply_users[name] = [phrase]
+
+
+    @commands.command()
+    async def list_custom_replies(self, ctx, name):
+        try:
+            replies = "\n\n".join([str(i+1)+ ". " + p for i, p in enumerate(config.reply_users[name])])
+            await ctx.send(replies)
+        except KeyError as k:
+            await ctx.send(f"Invalid name: {k}")
+
+
     # cute take on ping and pong
     @commands.command()
     async def pong(self, ctx):

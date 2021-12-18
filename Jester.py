@@ -84,7 +84,7 @@ async def on_message(message):
         
     try:
         await bot.process_commands(message)
-    except Exception() as e:
+    except Exception as e:
         print(f"ERR:\n{e}")
 
 

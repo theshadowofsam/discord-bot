@@ -18,11 +18,12 @@ graceful_end = config_file["stats"]["last_shutdown_graceful"]
 token = config_file["env"]["token"]
 main_guild = config_file["env"]["guild"]
 prefix = config_file["env"]["prefix"]
-
-bound_text_channels = config_file["bot_text_channels"]
 message_logging = config_file["env"]["message_logging"]
 event_logging = config_file["env"]["event_logging"]
 operator = config_file["operator"]
+
+bound_text_channels = config_file["bot_text_channels"]
+reply_users = config_file["reply_users"]
 
 
 emojis = {}
@@ -41,6 +42,7 @@ def writeout():
     config_file["env"]["event_logging"] = event_logging
 
     config_file["bot_text_channels"] = bound_text_channels
+    config_file["reply_users"] = reply_users
 
     with open("config.json", "w") as write_conf:
         json.dump(config_file, write_conf, indent="\t")

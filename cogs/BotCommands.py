@@ -70,7 +70,7 @@ class BotCommands(commands.Cog):
             return
         try:
             num = int(index)
-            popped = config.reply_users[name].pop(index-1)
+            popped = config.reply_users[name].pop(num-1)
             await ctx.send(f"{popped} was removed")
         except Exception as e:
             await ctx.send(f"{type(e)}: {e}")

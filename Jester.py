@@ -52,6 +52,14 @@ async def on_message(message):
     if message.author == bot.user:
         return
     
+    # stupid reply based on chance if any replies exist
+    if message.author.name in config.reply_users.keys():
+        if random.randint(0,9) == 4:
+            try:
+                await message.reply(random.choice(config.reply_users[message.author.name]))
+            except Exception as e:
+                await message.reply(f"{type(e)}: {e}")
+
     # logs messages in the relative servers message log
     if config.message_logging:
         logdir = f"logs/messages/{message.guild.id}/{message.channel.name}.txt"

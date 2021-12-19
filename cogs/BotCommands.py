@@ -42,6 +42,8 @@ class BotCommands(commands.Cog):
     # users and respective replies to 
     @commands.command()
     async def add_custom_reply(self, ctx, name, *, phrase):
+        if not ctx.author.guild_permissions.administrator:
+            return
         if name in config.reply_users.keys():
             config.reply_users.append(phrase)
         else:
@@ -50,6 +52,8 @@ class BotCommands(commands.Cog):
 
     @commands.command()
     async def list_custom_replies(self, ctx, name):
+        if not ctx.author.guild_permissions.administrator:
+            return
         try:
             replies = "\n\n".join([str(i+1)+ ". " + p for i, p in enumerate(config.reply_users[name])])
             await ctx.send(replies)

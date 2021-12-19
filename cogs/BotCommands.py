@@ -60,6 +60,20 @@ class BotCommands(commands.Cog):
         except KeyError as k:
             await ctx.send(f"Invalid name: {k}")
 
+    
+    @commands.command()
+    async def remove_custom_reply(self, ctx, name, index):
+        if not ctx.author.guild_permissions.administrator:
+            return
+        if not index.isdigit():
+            await ctx.send(f"{index} is not a number")
+            return
+        try:
+            num = int(index)
+            config.reply_users[name].pop(index-1)
+        except Exception as e:
+            ctx.send(f"{type(e)}: {e}")
+
 
     # cute take on ping and pong
     @commands.command()

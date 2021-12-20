@@ -120,7 +120,7 @@ async def on_message_delete(message):
 
 # creates a graceful shutdown of this bot
 # runs the writeout method in config.py
-@bot.command()
+@bot.command(aliases=["kill"])
 async def close(ctx):
     if ctx.author.name != config.operator:
         print(f"someone unauthorized tried to close the bot: {ctx.author.name}")
@@ -196,8 +196,10 @@ def refresh():
         config.emoji_list.append(config.emojis[emoji.name])
 
 
-# used by other functions to log what happens when
+# used by other functions to log some things when called
 # not really useful for anyone but me
+# only used in early stages when i could just look at a file
+# to see what happened, the message log is actually useful though
 def eventlog(message, stream):
     if not config.event_logging:
         return

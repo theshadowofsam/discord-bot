@@ -68,7 +68,7 @@ class Music(commands.Cog):
 
 
     # connects to active users voice channel
-    @commands.command()
+    @commands.command(aliases=["p"])
     async def play(self, ctx, *, source=None):
         voice_client = ctx.voice_client
 
@@ -85,7 +85,7 @@ class Music(commands.Cog):
         print(player.queue)
 
     # skips currently playing song in ctx.guild also uses vote system if not admin
-    @commands.command()
+    @commands.command(aliases=["s"])
     async def skip(self, ctx):
         if not ctx.author.voice:
             return
@@ -109,7 +109,7 @@ class Music(commands.Cog):
 
 
     # disconnects from voice
-    @commands.command()
+    @commands.command(aliases=["disconnect"])
     async def dc(self, ctx):
         await self.cleanup(ctx.guild)
 

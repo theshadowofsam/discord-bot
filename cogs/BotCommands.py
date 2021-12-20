@@ -14,13 +14,13 @@ class BotCommands(commands.Cog):
         self.bot = bot
 
 
-    @commands.command()
+    @commands.command(aliases=["test"])
     async def import_test(self, ctx):
         await ctx.send("PASS")
 
 
     # sets a main channel for the guild and channel this command was called in
-    @commands.command()
+    @commands.command(aliases=["default", "sdc"])
     async def set_default_channel(self, ctx):
         print("!set_default_channel called")
         if not ctx.author.guild_permissions.administrator:
@@ -32,15 +32,8 @@ class BotCommands(commands.Cog):
         await ctx.send(f"This channel was bound as {ctx.guild}'s Jester_ channel!")
 
 
-    # cute take on ping and pong
-    @commands.command()
-    async def ping(self, ctx):
-        await ctx.send("What does a battle rifle have in common with a microwave?")
-        Jester.eventlog("ping command called", "CMD")
-
-
     # users and respective replies to 
-    @commands.command()
+    @commands.command(aliases=["acr"])
     async def add_custom_reply(self, ctx, name, *, phrase):
         if not ctx.author.guild_permissions.administrator:
             return
@@ -50,8 +43,8 @@ class BotCommands(commands.Cog):
             config.reply_users[name] = [phrase]
 
 
-    @commands.command()
-    async def list_custom_replies(self, ctx, name):
+    @commands.command(aliases=["lcr"])
+    async def list_custom_reply(self, ctx, name):
         if not ctx.author.guild_permissions.administrator:
             return
         try:
@@ -63,7 +56,7 @@ class BotCommands(commands.Cog):
             await ctx.send(f"{type(e)}: {e}")
 
     
-    @commands.command()
+    @commands.command(aliases=["rcr"])
     async def remove_custom_reply(self, ctx, name, index):
         if not ctx.author.guild_permissions.administrator or not name in reply_users.keys():
             return
@@ -82,13 +75,20 @@ class BotCommands(commands.Cog):
 
     # cute take on ping and pong
     @commands.command()
+    async def ping(self, ctx):
+        await ctx.send("What does a battle rifle have in common with a microwave?")
+        Jester.eventlog("ping command called", "CMD")
+
+
+    # cute take on ping and pong
+    @commands.command()
     async def pong(self, ctx):
         await ctx.send("They both go 'ping' when they're done.")
         Jester.eventlog("pong command called", "CMD")
 
 
     # clear a text channel of 500 newest messages
-    @commands.command()
+    @commands.command(aliases=["purge"])
     async def jester_purge(self, ctx):
         if ctx.author.name != config.operator:
             ctx.send("Invalid user")

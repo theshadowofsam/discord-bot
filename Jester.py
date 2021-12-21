@@ -22,14 +22,19 @@ import datetime
 
 # checks for and creates logs/messages/ and logs/bot/ directory
 os.makedirs(os.path.join(os.getcwd(), os.path.dirname("logs/messages/")), exist_ok=True)
+os.makedirs(os.path.join(os.getcwd(), os.path.dirname("logs/messages/private/")), exist_ok=True)
 os.makedirs(os.path.join(os.getcwd(), os.path.dirname("logs/bot/")), exist_ok=True)
 
 # sets up bot
 intents = discord.Intents.default()
 intents.members = True
-bot = commands.Bot(command_prefix = config.prefix, intents = intents)
-bot.load_extension('cogs.BotCommands')
-bot.load_extension('cogs.Music')
+bot = commands.Bot(command_prefix = config.prefix, intents = intents, help_command=None)
+
+#load cogs
+for c in [fn.split(".")[0] for fn in os.listdir(path="cogs") if fn.endswith(".py")]:
+    bot.load_extension(f"cogs.{c}")
+# bot.load_extension('cogs.BotCommands')
+# bot.load_extension('cogs.Music')
 
 # on_ready() is called when the bot connects and is readied
 @bot.event
@@ -60,18 +65,28 @@ async def on_message(message):
             except Exception as e:
                 await message.reply(f"{type(e)}: {e}")
 
-    # logs messages in the relative servers message log
+    # logs messages in the relative servers/private message log
     if config.message_logging:
-        logdir = f"logs/messages/{message.guild.id}/{message.channel.name}.txt"
+        if message.channel.type == discord.ChannelType.private:
+            logdir = f"logs/messages/private/{message.author.name}.txt"
+        else:
+            logdir = f"logs/messages/{message.guild.name}/{message.channel.name}.txt"
+
         mentions = ""
         if len(message.mentions) != 0:
             for user in message.mentions:
                 mentions += f"\n\t{user.name} : {user.id}"
         else:
             mentions = "\n\tNone"
-        with open(os.path.join(os.getcwd(), logdir), mode="a") as log:
-            lines = f"\nMessage ID: {message.id}\nAuthor: {message.author}\nTime: {message.created_at}\nMentions: {mentions}\nContents:\n" + "-"*35 + f"\n{message.content}\n" + "-"*35 + "\n"
-            log.write(lines)
+        try:
+            with open(os.path.join(os.getcwd(), logdir), mode="a") as log:
+                lines = f"\nMessage ID: {message.id}\nAuthor: {message.author}\nTime: {message.created_at}\nMentions: {mentions}\nContents:\n" + "-"*35 + f"\n{message.content}\n" + "-"*35 + "\n"
+                log.write(lines)
+        except FileNotFoundError:
+            with open(os.path.join(os.getcwd(), logdir), mode="w") as log:
+                lines = f"\nMessage ID: {message.id}\nAuthor: {message.author}\nTime: {message.created_at}\nMentions: {mentions}\nContents:\n" + "-"*35 + f"\n{message.content}\n" + "-"*35 + "\n"
+                log.write(lines)
+
 
     # records bot mentions
     if f"<@{bot.user.id}>" in message.content or f"<@!{bot.user.id}>" in message.content:
@@ -156,7 +171,7 @@ def startup():
         print(f"\t{key} : {config.bound_text_channels[key]}")
 
     for guild in bot.guilds:
-            os.makedirs(os.path.join(os.getcwd(), os.path.dirname(f"logs/messages/{guild.id}/")), exist_ok=True)
+            os.makedirs(os.path.join(os.getcwd(), os.path.dirname(f"logs/messages/{guild.name}/")), exist_ok=True)
     
     # check and response for an abrupt previous shutdown
     if not config.graceful_end:

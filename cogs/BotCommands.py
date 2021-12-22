@@ -88,8 +88,13 @@ class BotCommands(commands.Cog):
 
 
     # clear a text channel of 500 newest messages
+    # or clear a DMchannel of all bots messages in the last 500
     @commands.command(aliases=["purge"])
     async def jester_purge(self, ctx):
+        if ctx.channel.type == discord.ChannelType.private:
+            async for mes in ctx.channel.history(limit=500):
+                if mes.author == self.bot:
+                    await mes.delete()
         if ctx.author.name != config.operator:
             ctx.send("Invalid user")
             return

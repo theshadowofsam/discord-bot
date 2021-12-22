@@ -33,8 +33,7 @@ bot = commands.Bot(command_prefix = config.prefix, intents = intents, help_comma
 #load cogs
 for c in [fn.split(".")[0] for fn in os.listdir(path="cogs") if fn.endswith(".py")]:
     bot.load_extension(f"cogs.{c}")
-# bot.load_extension('cogs.BotCommands')
-# bot.load_extension('cogs.Music')
+
 
 # on_ready() is called when the bot connects and is readied
 @bot.event

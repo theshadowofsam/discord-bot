@@ -93,8 +93,9 @@ class BotCommands(commands.Cog):
     async def jester_purge(self, ctx):
         if ctx.channel.type == discord.ChannelType.private:
             async for mes in ctx.channel.history(limit=500):
-                if mes.author == self.bot:
+                if mes.author == self.bot.user:
                     await mes.delete()
+            return
         if ctx.author.name != config.operator:
             ctx.send("Invalid user")
             return

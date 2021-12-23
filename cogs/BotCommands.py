@@ -58,7 +58,7 @@ class BotCommands(commands.Cog):
     
     @commands.command(aliases=["rcr"])
     async def remove_custom_reply(self, ctx, name, index):
-        if not ctx.author.guild_permissions.administrator or not name in reply_users.keys():
+        if not ctx.author.guild_permissions.administrator or not name in config.reply_users.keys():
             return
         if not index.isdigit():
             await ctx.send(f"{index} is not a number")
@@ -68,7 +68,7 @@ class BotCommands(commands.Cog):
             popped = config.reply_users[name].pop(num-1)
             await ctx.send(f"{popped} was removed")
             if len(config.reply_users[name]) == 0:
-                reply_users.pop(name)
+                config.reply_users.pop(name)
         except Exception as e:
             await ctx.send(f"{type(e)}: {e}")
 

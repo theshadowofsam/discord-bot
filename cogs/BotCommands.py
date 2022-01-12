@@ -38,7 +38,7 @@ class BotCommands(commands.Cog):
         if not ctx.author.guild_permissions.administrator:
             return
         if name in config.reply_users.keys():
-            config.reply_users.append(phrase)
+            config.reply_users[name].append(phrase)
         else:
             config.reply_users[name] = [phrase]
 

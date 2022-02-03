@@ -25,7 +25,8 @@ operator = config_file["operator"]
 bound_text_channels = config_file["bot_text_channels"]
 reply_users = config_file["reply_users"]
 
-
+random_chance = config_file["random_chance"]
+chancing = config_file["chancing"]
 emojis = {}
 emoji_list = []
 on_ready_ran = False

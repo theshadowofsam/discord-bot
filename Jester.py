@@ -57,8 +57,8 @@ async def on_message(message):
         return
     
     # stupid reply based on chance if any replies exist
-    if message.author.name in config.reply_users.keys():
-        if random.randint(0,9) == 4:
+    if config.chancing and message.author.name in config.reply_users.keys():
+        if random.random() <= 1/config.random_chance:
             try:
                 await message.reply(random.choice(config.reply_users[message.author.name]))
             except Exception as e:

@@ -19,6 +19,28 @@ class BotCommands(commands.Cog):
         await ctx.send("PASS")
 
 
+    @commands.command(aliases=["rand", "chance"])
+    async def change_chance(self, ctx, chance, active):
+        try:
+            if not ctx.author.guild_permissions.administrator:
+                return
+            tr = ["true", '1', 'y', 'yes']
+            fa = ['false', '0', 'n', 'no']
+            response = []
+            if chance.isdigit() and int(chance) >= 0:
+                config.random_chance = int(chance)
+                response.append(f'Chance is now 1 in {chance}')
+            if active in tr:
+                config.chancing = True
+                response.append(f'Chancing is now {config.chancing}')
+            if active in fa:
+                config.chancing = False
+                response.append(f'Chancing is now {config.chancing}')
+            await ctx.send(', '.join(response))
+        except Exception as e:
+            await ctx.send(f'{type(e)}: {e}')
+
+
     # sets a main channel for the guild and channel this command was called in
     @commands.command(aliases=["default", "sdc"])
     async def set_default_channel(self, ctx):
@@ -138,4 +160,3 @@ class BotCommands(commands.Cog):
 
 def setup(bot):
     bot.add_cog(BotCommands(bot))
-    

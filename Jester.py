@@ -20,18 +20,21 @@ import re
 import sys
 import datetime
 
+
 # checks for and creates logs/messages/ and logs/bot/ directory
 os.makedirs(os.path.join(os.getcwd(), os.path.dirname("logs/messages/")), exist_ok=True)
 os.makedirs(os.path.join(os.getcwd(), os.path.dirname("logs/messages/private/")), exist_ok=True)
 os.makedirs(os.path.join(os.getcwd(), os.path.dirname("logs/bot/")), exist_ok=True)
+
 
 # sets up bot
 intents = discord.Intents.default()
 intents.members = True
 bot = commands.Bot(command_prefix = config.prefix, intents = intents, help_command=None)
 
+
 #load cogs
-for c in [fn.split(".")[0] for fn in os.listdir(path="cogs") if fn.endswith(".py")]:
+for c in [fn.split(".")[0] for fn in os.listdir(path="cogs") if fn.endswith(".py") and not fn.startswith("TEST")]:
     bot.load_extension(f"cogs.{c}")
 
 
@@ -231,4 +234,4 @@ def eventlog(message, stream):
 if __name__ == "__main__":
     bot.run(config.token)
     print("SHUTDOWN COMPLETE")
-    print("*"*35 + "\n\n\n")
+    print("*"*35 + "\n")

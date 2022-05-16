@@ -66,23 +66,30 @@ class Music(commands.Cog):
         self.bot = bot
         self.mp = {}
 
+    # hee haw
+    @commands.command()
+    async def beacon(self, ctx):
+        voice_client = ctx.voice_client
+        if not voice_client:
+            await self.join(ctx, voice_client)
+        beacon = Source(ctx, {'title':'Beacon', 'id':'topkek'}, 'bacon.mp3')
+        player = self.get_player(ctx)
+        await player.queue.put(beacon)
+        print(player.queue)
+
 
     # connects to active users voice channel
     @commands.command(aliases=["p"])
-    async def play(self, ctx, *, source=None):
+    async def play(self, ctx, *, source):
         voice_client = ctx.voice_client
-
         if not voice_client:
             await self.join(ctx, voice_client)
-        
         player = self.get_player(ctx)
-
         data, url = ytsearch(source)
-        
         source = Source(ctx, data, url)
-
         await player.queue.put(source)
         print(player.queue)
+
 
     # skips currently playing song in ctx.guild also uses vote system if not admin
     @commands.command(aliases=["s"])
@@ -105,7 +112,7 @@ class Music(commands.Cog):
         else:
             print(f"{len(ctx.author.voice.channel.members)-1} voice channel members")
             print((len(ctx.author.voice.channel.members)-1)/2)
-            await ctx.send(f"Not enough votes to skip: {len(player.skips)}/{len(ctx.author.voice.channel.members)/2}")
+            await ctx.send(f"Not enough votes to skip: {len(player.skips)}/{len(ctx.author.voice.channel.members)-1/2}")
 
 
     # disconnects from voice

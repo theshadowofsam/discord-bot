@@ -112,6 +112,10 @@ async def on_message(message):
     except Exception as e:
         print(f"ERR:\n{e}")
 
+"""
+DEPRECATED
+
+unused anymore
 
 # records deletion of known messages
 @bot.event
@@ -133,7 +137,7 @@ async def on_message_delete(message):
         record += "\t" + message.content
 
         await message.guild.get_channel(config.bound_text_channels[message.guild.name]).send(record)
-
+"""
 
 # creates a graceful shutdown of this bot
 # runs the writeout method in config.py

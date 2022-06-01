@@ -81,11 +81,11 @@ async def on_message(message):
         else:
             mentions = "\n\tNone"
         try:
-            with open(os.path.join(os.getcwd(), logdir), mode="a") as log:
+            with open(os.path.join(os.getcwd(), logdir), encoding='utf_8', mode='a') as log:
                 lines = f"\nMessage ID: {message.id}\nAuthor: {message.author}\nTime: {message.created_at}\nMentions: {mentions}\nContents:\n" + "-"*35 + f"\n{message.content}\n" + "-"*35 + "\n"
                 log.write(lines)
         except FileNotFoundError:
-            with open(os.path.join(os.getcwd(), logdir), mode="w") as log:
+            with open(os.path.join(os.getcwd(), logdir), encoding='utf_8', mode='w') as log:
                 lines = f"\nMessage ID: {message.id}\nAuthor: {message.author}\nTime: {message.created_at}\nMentions: {mentions}\nContents:\n" + "-"*35 + f"\n{message.content}\n" + "-"*35 + "\n"
                 log.write(lines)
 

@@ -42,6 +42,8 @@ def writeout():
     config_file["env"]["message_logging"]  = message_logging
     config_file["env"]["event_logging"] = event_logging
 
+    config_file["random_chance"] = random_chance
+    config_file["chancing"] = chancing
     config_file["bot_text_channels"] = bound_text_channels
     config_file["reply_users"] = reply_users
 

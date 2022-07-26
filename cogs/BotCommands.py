@@ -6,7 +6,6 @@ Samuel Lee
 import discord
 from discord.ext import commands
 import config
-import Jester
 
 
 class BotCommands(commands.Cog):
@@ -113,14 +112,12 @@ class BotCommands(commands.Cog):
     @commands.command()
     async def ping(self, ctx):
         await ctx.send("What does a battle rifle have in common with a microwave?")
-        Jester.eventlog("ping command called", "CMD")
 
 
     # cute take on ping and pong
     @commands.command()
     async def pong(self, ctx):
         await ctx.send("They both go 'ping' when they're done.")
-        Jester.eventlog("pong command called", "CMD")
 
 
     # clear a text channel of 500 newest messages
@@ -143,7 +140,6 @@ class BotCommands(commands.Cog):
     async def log(self, ctx, event=None, message=None): 
         if not ctx.author.guild_permissions.administrator:
             print(f"Unauthorized user {ctx.author.name} called log")
-            Jester.eventlog(f"Unauthorized LOG event called by {ctx.author.name}", "ERR")
             return
 
         if event is None and message is None:
@@ -169,7 +165,6 @@ class BotCommands(commands.Cog):
             channel = discord.utils.get(ctx.guild.text_channels, id=config.bound_text_channels[ctx.guild.name])
             await channel.send(f"Event Logging: {config.event_logging}\nMessage Logging: {config.message_logging}")
 
-        Jester.eventlog("Logging toggled", "CMD")
 
 
 def setup(bot):

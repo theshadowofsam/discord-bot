@@ -89,7 +89,6 @@ async def on_message(message):
                 lines = f"\nMessage ID: {message.id}\nAuthor: {message.author}\nTime: {message.created_at}\nMentions: {mentions}\nContents:\n" + "-"*35 + f"\n{message.content}\n" + "-"*35 + "\n"
                 log.write(lines)
 
-
     # records bot mentions
     if f"<@{bot.user.id}>" in message.content or f"<@!{bot.user.id}>" in message.content:
         config.mentions += 1

@@ -3,10 +3,10 @@ yt_search.py
 Samuel Lee
 10/11/2021
 
-uses youtube-dl to get info of a youtube video
+uses yt-dlp (a fork of youtube-dl) to get info of a youtube video
 also can search youtube based on an input search phrase
 """
-import youtube_dl
+import yt_dlp as youtube_dl
 from requests import get
 
 opts = {'format':'bestaudio', 'noplaylist':'True'}
@@ -28,3 +28,4 @@ if __name__ == '__main__':
     video, url = search("https://www.youtube.com/watch?v=-0Ao4t_fe0I")
     print(url)
     print(video)
+    

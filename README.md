@@ -8,7 +8,7 @@ log to a local file and perform various other functions
 ### Dependecies 
 **[requests](https://pypi.org/project/requests/)**  
 **[discord.py](https://pypi.org/project/discord.py/)** -> **[API Reference](https://discordpy.readthedocs.io/en/stable/)**  
-**[youtube-dl](https://youtube-dl.org/)** if you plan to use the music player cog 
+**[yt-dlp](https://pypi.org/project/yt-dlp/)** a fork of youtube-dl. if you plan to use the music player cog 
 
 
 A basic Discord Bot with chat commands and some statistic saving

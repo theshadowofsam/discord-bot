@@ -33,14 +33,14 @@ class MusicPlayer:
             self.go.clear()
 
             try:
-                async with timeout(300):
+                async with timeout(120):
                     source = await self.queue.get()
             except:
                 return self.destroy(self.guild)
             
             self.current = source
             self.guild.voice_client.play(FFmpegPCMAudio(source.source, options=FFMPEG_OPTS), after=lambda _: self.bot.loop.call_soon_threadsafe(self.go.set))
-            await self.channel.send(f"Now Playing: \n{source.url}")
+            await self.channel.send(f"Now Playing: \n{source.url}\n Requested by: {source.requested}")
 
             await self.go.wait()
 
@@ -51,6 +51,7 @@ class MusicPlayer:
     def destroy(self, guild):
         return self.bot.loop.create_task(self.cog.cleanup(guild))
             
+            
 # used for audio sources and info
 class Source:
     def __init__(self, ctx, data, url):
@@ -60,11 +61,13 @@ class Source:
         self.requested = ctx.author.name
         self.full_data = data
 
+
 # Music Cog
 class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.mp = {}
+
 
     # hee haw
     @commands.command()
@@ -75,12 +78,14 @@ class Music(commands.Cog):
         beacon = Source(ctx, {'title':'Beacon', 'id':'topkek'}, 'bacon.mp3')
         player = self.get_player(ctx)
         await player.queue.put(beacon)
-        print(player.queue)
 
 
     # connects to active users voice channel
     @commands.command(aliases=["p"])
     async def play(self, ctx, *, source):
+        if not ctx.author.voice:
+            await ctx.author.send(f"You cannot play audio in a server you are not connected to.")
+            return
         voice_client = ctx.voice_client
         if not voice_client:
             await self.join(ctx, voice_client)
@@ -88,7 +93,6 @@ class Music(commands.Cog):
         data, url = ytsearch(source)
         source = Source(ctx, data, url)
         await player.queue.put(source)
-        print(player.queue)
 
 
     # skips currently playing song in ctx.guild also uses vote system if not admin
@@ -106,13 +110,11 @@ class Music(commands.Cog):
         if not ctx.author.id in player.skips:
             player.skips.append(ctx.author.id)
         print(player.skips)
-        if (len(player.skips) >= (len(ctx.author.voice.channel.members)-1)/2) or ctx.author.guild_permissions.administrator:
+        if (len(player.skips) >= (len(ctx.author.voice.channel.members)-1//2 + 1)) or ctx.author.guild_permissions.administrator:
             await ctx.send("Skipping!")
-            vc.stop()        
+            vc.stop()
         else:
-            print(f"{len(ctx.author.voice.channel.members)-1} voice channel members")
-            print((len(ctx.author.voice.channel.members)-1)/2)
-            await ctx.send(f"Not enough votes to skip: {len(player.skips)}/{len(ctx.author.voice.channel.members)-1/2}")
+            await ctx.send(f"Not enough votes to skip: {len(player.skips)}/{len(ctx.author.voice.channel.members)-1//2 + 1}")
 
 
     # disconnects from voice

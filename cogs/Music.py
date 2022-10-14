@@ -58,7 +58,7 @@ class Source:
         self.name = data['title']
         self.source = url
         self.url = f"https://www.youtube.com/watch?v=" + data['id']
-        self.requested = ctx.author.name
+        self.requested = ctx.author.nick if ctx.author.nick else ctx.author.name
         self.full_data = data
 
 

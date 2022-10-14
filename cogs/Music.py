@@ -40,7 +40,7 @@ class MusicPlayer:
             
             self.current = source
             self.guild.voice_client.play(FFmpegPCMAudio(source.source, options=FFMPEG_OPTS), after=lambda _: self.bot.loop.call_soon_threadsafe(self.go.set))
-            await self.channel.send(f"Now Playing: \n{source.url}\n Requested by: {source.requested}")
+            await self.channel.send(f"Now Playing: \n{source.name} by {source.full_data['uploader']}\nRequested by: {source.requested}")
 
             await self.go.wait()
 
@@ -51,7 +51,7 @@ class MusicPlayer:
     def destroy(self, guild):
         return self.bot.loop.create_task(self.cog.cleanup(guild))
             
-            
+
 # used for audio sources and info
 class Source:
     def __init__(self, ctx, data, url):

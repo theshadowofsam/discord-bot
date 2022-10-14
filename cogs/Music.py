@@ -18,8 +18,9 @@ class MusicPlayer:
     def __init__(self, ctx):
         self.bot = ctx.bot
         self.guild = ctx.guild
-        self.queue = asyncio.Queue()
-        self.go = asyncio.Event() 
+        self.queue = asyncio.Queue(maxsize=100)
+        self.queue_items = []
+        self.go = asyncio.Event()
         self.current = None
         self.channel = ctx.channel
         self.cog = ctx.cog
@@ -37,7 +38,8 @@ class MusicPlayer:
                     source = await self.queue.get()
             except:
                 return self.destroy(self.guild)
-            
+            self.queue_items.pop(0)
+
             self.current = source
             self.guild.voice_client.play(FFmpegPCMAudio(source.source, options=FFMPEG_OPTS), after=lambda _: self.bot.loop.call_soon_threadsafe(self.go.set)) #guild.voice_client.play() spawns a sub-process. doesn't block.
             await self.channel.send(f"Now Playing: \n{source.name} by {source.full_data['uploader']}\nRequested by: {source.requested}")
@@ -93,6 +95,7 @@ class Music(commands.Cog):
         data, url = ytsearch(source)
         source = Source(ctx, data, url)
         await player.queue.put(source)
+        player.queue_items.append(data['title'])
 
 
     # skips currently playing song in ctx.guild also uses vote system if not admin
@@ -115,6 +118,20 @@ class Music(commands.Cog):
             vc.stop()
         else:
             await ctx.send(f"Not enough votes to skip: {len(player.skips)}/{len(ctx.author.voice.channel.members)-1//2 + 1}")
+
+
+    # sends a message with the queue displayed
+    @commands.command(aliases=["q"])
+    async def queue(self, ctx):
+        if not ctx.author.voice or not ctx.voice_client:
+            return
+        player = self.get_player(ctx)
+        if len(player.queue_items) == 0:
+            return
+        msg = ""
+        for i, s in enumerate(player.queue_items):
+            msg += f"{i+1}. {s}\n"
+        await ctx.send(msg)
 
 
     # disconnects from voice

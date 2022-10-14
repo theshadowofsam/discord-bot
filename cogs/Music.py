@@ -30,19 +30,19 @@ class MusicPlayer:
 
     async def player_loop(self):
         while not self.bot.is_closed():
-            self.go.clear()
+            self.go.clear() # i dont think i need this but i don't care enough to fuck with it
 
             try:
-                async with timeout(120):
+                async with timeout(120): # disconnect from guild after 2 mins
                     source = await self.queue.get()
             except:
                 return self.destroy(self.guild)
             
             self.current = source
-            self.guild.voice_client.play(FFmpegPCMAudio(source.source, options=FFMPEG_OPTS), after=lambda _: self.bot.loop.call_soon_threadsafe(self.go.set))
+            self.guild.voice_client.play(FFmpegPCMAudio(source.source, options=FFMPEG_OPTS), after=lambda _: self.bot.loop.call_soon_threadsafe(self.go.set)) #guild.voice_client.play() spawns a sub-process. doesn't block.
             await self.channel.send(f"Now Playing: \n{source.name} by {source.full_data['uploader']}\nRequested by: {source.requested}")
 
-            await self.go.wait()
+            await self.go.wait() # await here gives control back to event loop until song ends(after=lambda _)
 
             self.current = None
             self.skips = []

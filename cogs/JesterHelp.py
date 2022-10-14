@@ -5,6 +5,8 @@ JesterHelp.py
 
 This is a cog for Jester.py, the discord bot
 it contains the Help command and all related functions/commands
+
+UNUSED CURRENTLY
 """
 import discord
 from discord.ext import commands
@@ -30,7 +32,6 @@ class JesterHelp(commands.Cog):
                     response += f"\t-{c.name}\n"
         await ctx.author.send(response)
         
-
 
 def setup(bot):
     bot.add_cog(JesterHelp(bot))

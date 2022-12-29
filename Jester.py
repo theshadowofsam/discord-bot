@@ -28,19 +28,17 @@ os.makedirs(os.path.join(os.getcwd(), os.path.dirname("logs/bot/")), exist_ok=Tr
 
 
 # sets up bot
-intents = discord.Intents.default()
-intents.members = True
+intents = discord.Intents.all()
 bot = commands.Bot(command_prefix = config.prefix, intents = intents, help_command=None)
-
-
-#load cogs
-for c in [fn.split(".")[0] for fn in os.listdir(path="cogs") if fn.endswith(".py") and not fn.startswith("TEST")]:
-    bot.load_extension(f"cogs.{c}")
 
 
 # on_ready() is called when the bot connects and is readied
 @bot.event
 async def on_ready():
+    # load cogs
+    for c in [fn.split(".")[0] for fn in os.listdir(path="cogs") if fn.endswith(".py") and not fn.startswith("TEST")]:
+        await bot.load_extension(f"cogs.{c}")
+
     if not config.on_ready_ran:
         eventlog("on_ready called", "READY")
         startup()

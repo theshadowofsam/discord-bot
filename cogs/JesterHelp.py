@@ -33,5 +33,5 @@ class JesterHelp(commands.Cog):
         await ctx.author.send(response)
         
 
-def setup(bot):
-    bot.add_cog(JesterHelp(bot))
+async def setup(bot):
+    await bot.add_cog(JesterHelp(bot))

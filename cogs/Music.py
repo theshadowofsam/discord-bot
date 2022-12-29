@@ -20,6 +20,8 @@ class MusicPlayer:
         self.guild = ctx.guild
         self.queue = asyncio.Queue(maxsize=100)
         self.queue_items = []
+        self.sub_queues = {}
+        self.sqi = 0    # sub  queue index
         self.go = asyncio.Event()
         self.current = None
         self.channel = ctx.channel
@@ -34,7 +36,7 @@ class MusicPlayer:
             self.go.clear() # i dont think i need this but i don't care enough to fuck with it
 
             try:
-                async with timeout(120): # disconnect from guild after 2 mins
+                async with timeout(120): # disconnect from guild after 2 mins if nothing is in the queue for time
                     source = await self.queue.get()
             except:
                 return self.destroy(self.guild)
@@ -79,6 +81,7 @@ class Music(commands.Cog):
             await self.join(ctx, voice_client)
         beacon = Source(ctx, {'title':'Beacon', 'id':'topkek'}, 'bacon.mp3')
         player = self.get_player(ctx)
+        player.queue_items.append('Beacon')
         await player.queue.put(beacon)
 
 
@@ -117,7 +120,7 @@ class Music(commands.Cog):
             await ctx.send("Skipping!")
             vc.stop()
         else:
-            await ctx.send(f"Not enough votes to skip: {len(player.skips)}/{len(ctx.author.voice.channel.members)-1//2 + 1}")
+            await ctx.send(f"Not enough votes to skip: {len(player.skips)}/{(len(ctx.author.voice.channel.members)-1)//2 + 1}")
 
 
     # sends a message with the queue displayed
@@ -186,5 +189,5 @@ class Music(commands.Cog):
         return player
 
 
-def setup(bot):
-    bot.add_cog(Music(bot))
+async def setup(bot):
+    await bot.add_cog(Music(bot))

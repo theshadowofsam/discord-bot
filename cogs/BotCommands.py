@@ -60,7 +60,7 @@ class BotCommands(commands.Cog):
         print("!set_default_channel called")
         if not ctx.author.guild_permissions.administrator:
             print("Unauthorized user called set_default_channel")
-            bot.eventlog(f"Unauthorized set_default_channel called by {ctx.author.name}", "ERR")
+            self.bot.eventlog(f"Unauthorized set_default_channel called by {ctx.author.name}", "ERR")
             return
         config.bound_text_channels[f"{ctx.guild}"] = ctx.message.channel.id
         print(f"{ctx.guild} = {ctx.message.channel.id}")
@@ -166,6 +166,5 @@ class BotCommands(commands.Cog):
             await channel.send(f"Event Logging: {config.event_logging}\nMessage Logging: {config.message_logging}")
 
 
-
-def setup(bot):
-    bot.add_cog(BotCommands(bot))
+async def setup(bot):
+    await bot.add_cog(BotCommands(bot))

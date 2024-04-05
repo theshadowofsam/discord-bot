@@ -66,7 +66,7 @@ async def on_message(message):
                 await message.reply(f"{type(e)}: {e}")
 
     # logs messages in the relative servers/private message log
-    if config.message_logging:
+    if config.message_logging: #TODO: put this in a function and CHECK FOR EXISTENCE OF TEXT FILE AND MAKE A TEXT FILE IF APPROPRIATE
         if message.channel.type == discord.ChannelType.private:
             logdir = f"logs/messages/private/{message.author.name}.txt"
         else:

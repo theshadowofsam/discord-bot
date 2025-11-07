@@ -20,7 +20,7 @@ class LogClient(commands.Bot):
         super().__init__(**kwargs)
         self.name = "LogClient"
         self.WriteThread = Utils.WriteThread(writeDir, writeFile)
-        self.WriteProcess = multiprocessing.Process(target=self.WriteThread.run)
+        self.WriteProcess = multiprocessing.Process(target=self.WriteThread.run, daemon=False)
         self.WriteProcess.start()
         self.presence = discord.Activity(name="Deep Frying Mobius's Legs", state="In Big Dave's Kitchen", platform="Big Wok, Peanut Oil", type=discord.ActivityType.playing)
         self.ready = False
@@ -49,7 +49,7 @@ class LogClient(commands.Bot):
 
 class CommandClient(commands.Bot):
     def __init__(self, **kwargs):
-        super.__init__(**kwargs)
+        super().__init__(**kwargs)
         self.name = "CommandClient"
         self.ready = False
 

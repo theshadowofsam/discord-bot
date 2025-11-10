@@ -59,6 +59,7 @@ class CommandClient(commands.Bot):
         else:
             print("Ready!")
             await self.add_cog(BaseCommands(self))
+            await self.add_cog(BaseClose(self))
             self.ready = True
         return 0
     
@@ -72,6 +73,32 @@ class CommandClient(commands.Bot):
         else:
             return await super().on_command_error(context, exception)
         
+
+class MinecraftClient(commands.Bot):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.name = "MinecraftClient"
+        self.ready = False
+
+    async def on_ready(self):
+        if self.ready:
+            pass
+        else:
+            print("Ready!")
+            await self.add_cog(BaseClose(self))
+            self.ready = True
+        return 0
+    
+    async def on_message(self, message: discord.Message):
+        await self.process_commands(message)
+        return 0
+    
+    async def on_command_error(self, context, exception):
+        if isinstance(exception, DiscordError.CommandNotFound):
+            pass
+        else:
+            return await super().on_command_error(context, exception)
+
 
 # class SoundClient(commands.bot):
 #     def __init__(self, **kwargs):

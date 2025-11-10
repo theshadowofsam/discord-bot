@@ -1,4 +1,6 @@
 from discord import Message
+from mcstatus import JavaServer
+
 from multiprocessing import Queue
 import datetime
 import os
@@ -74,3 +76,14 @@ class WriteThread():
         while self.running:
             self.logMsg(self.queue_.get(block=True))
         return 0
+    
+
+class queryClient():
+    def __init__(self):
+        self.queryQueue = Queue()
+        self.responseQueue = Queue()
+        self.servers = {}
+
+    def run(self):
+        while True:
+            pass
